@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استوديو العروض الخارق Beast Mode v5.0 | NVIDIA Nemotron + SDXL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #040811; --bg-panel: rgba(10, 18, 32, 0.82);
+      --accent1: #10b981; --accent2: #06b6d4; --accent3: #34d399;
+      --text-main: #f8fafc; --card-border: rgba(255, 255, 255, 0.14);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo','Tajawal',sans-serif; }
+    body { background-color:var(--bg-dark); color:var(--text-main); overflow-x:hidden; user-select:none; }
+    ::-webkit-scrollbar { width:7px; height:7px; }
+    ::-webkit-scrollbar-track { background:rgba(6,12,24,0.9); }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.22); border-radius:99px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--accent1); }
+    #atmosCanvas { position:fixed; inset:0; width:100vw; height:100vh; z-index:1; pointer-events:none; }
+    .glass-panel { background:var(--bg-panel); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); border:1px solid var(--card-border); box-shadow:0 25px 65px -15px rgba(0,0,0,0.8); }
+    .grad-text { background:linear-gradient(135deg,#ffffff 0%,var(--accent1) 52%,var(--accent2) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .grad-btn { background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:#03110d; font-weight:900; transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1); }
+    .grad-btn:hover { transform:translateY(-2px) scale(1.01); box-shadow:0 12px 35px -6px var(--accent1); }
+    .node-box { position:relative; background:linear-gradient(145deg,rgba(15,25,45,0.88) 0%,rgba(8,14,28,0.72) 100%); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,0.16); box-shadow:0 20px 50px rgba(0,0,0,0.65),inset 0 1px 0 rgba(255,255,255,0.2); transition:box-shadow 0.35s ease,border-color 0.35s ease,transform 0.35s cubic-bezier(0.2,0.8,0.2,1); }
+    .node-box:hover { border-color:var(--accent1); box-shadow:0 25px 60px rgba(0,0,0,0.8),0 0 28px -4px var(--accent1); z-index:30 !important; }
+    .shape-scifi { clip-path:polygon(0 16px,16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px)); border-radius:4px; }
+    .shape-scifi::before { content:''; position:absolute; top:0; right:0; width:45%; height:3px; background:linear-gradient(90deg,transparent,var(--accent1)); pointer-events:none; }
+    .shape-glass { border-radius:1.6rem; }
+    .shape-hex { clip-path:polygon(6% 0%,94% 0%,100% 22%,100% 78%,94% 100%,6% 100%,0% 78%,0% 22%); padding-left:1.75rem !important; padding-right:1.75rem !important; }
+    .shape-tilted:nth-child(odd) { border-radius:1.75rem 0.4rem 1.75rem 0.4rem; transform:rotate(-1.8deg); }
+    .shape-tilted:nth-child(even) { border-radius:0.4rem 1.75rem 0.4rem 1.75rem; transform:rotate(1.8deg); }
+    .shape-tilted:hover { transform:rotate(0deg) scale(1.04) !important; }
+    .hud-bracket-tl, .hud-bracket-br { position:absolute; width:14px; height:14px; pointer-events:none; opacity:0.75; }
+    .hud-bracket-tl { top:8px; right:8px; border-top:2px solid var(--accent1); border-right:2px solid var(--accent1); }
+    .hud-bracket-br { bottom:8px; left:8px; border-bottom:2px solid var(--accent2); border-left:2px solid var(--accent2); }
+    .connector-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:4; }
+    .energy-line-bg { fill:none; stroke:rgba(255,255,255,0.1); stroke-width:2; }
+    .energy-line-pulse { fill:none; stroke:var(--accent1); stroke-width:2.5; stroke-dasharray:10 14; animation:pulseFlow 1.6s linear infinite; filter:drop-shadow(0 0 6px var(--accent1)); }
+    @keyframes pulseFlow { to { stroke-dashoffset:-48; } }
+    .steam-overlay { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:5; border-radius: inherit; }
+    .steam-cloud { position:absolute; bottom:-30%; width:140px; height:140px; background:radial-gradient(circle,rgba(255,255,255,0.32) 0%,rgba(200,245,255,0.12) 45%,transparent 70%); filter:blur(18px); border-radius:50%; animation:riseSteam 5.5s ease-in infinite; }
+    .steam-cloud:nth-child(2) { left:25%; width:180px; height:180px; animation-duration:7s; animation-delay:1.2s; }
+    .steam-cloud:nth-child(3) { left:55%; width:150px; height:150px; animation-duration:6.2s; animation-delay:2.6s; }
+    .steam-cloud:nth-child(4) { left:78%; width:130px; height:130px; animation-duration:4.8s; animation-delay:0.7s; }
+    @keyframes riseSteam { 0%{transform:translateY(0) scale(0.7) translateX(0);opacity:0;} 35%{opacity:0.55;} 75%{opacity:0.3;} 100%{transform:translateY(-340px) scale(1.9) translateX(-25px);opacity:0;} }
+    #playerView { position:fixed; inset:0; z-index:40; display:none; perspective:1800px; overflow:hidden; }
+    #slidesViewport { position:relative; width:100vw; height:100vh; transform-style:preserve-3d; }
+    .slide-item { position:absolute; inset:0; width:100%; height:100%; opacity:0; visibility:hidden; pointer-events:none; overflow:hidden; padding:3.8rem 3.5rem 5.5rem; display:flex; align-items:center; justify-content:center; transition:transform 0.85s cubic-bezier(0.16,1,0.3,1),opacity 0.75s ease,filter 0.75s ease; transform:scale(0.92) translateY(25px); filter:blur(12px); }
+    .slide-item.active { opacity:1; visibility:visible; pointer-events:auto; z-index:10; transform:scale(1) translateY(0); filter:blur(0px); }
+    .slide-item.prev { transform:scale(1.12) translateY(-25px); filter:blur(14px); opacity:0; }
+    .stagger-el { opacity:0; transform:translateY(30px) scale(0.94); transition:opacity 0.75s cubic-bezier(0.16,1,0.3,1),transform 0.75s cubic-bezier(0.16,1,0.3,1); }
+    .slide-item.active .stagger-el { opacity:1; transform:translateY(0) scale(1); }
+    .slide-item.active .delay-1 { transition-delay:0.1s; }
+    .slide-item.active .delay-2 { transition-delay:0.2s; }
+    .slide-item.active .delay-3 { transition-delay:0.3s; }
+    .slide-item.active .delay-4 { transition-delay:0.4s; }
+    .slide-item.active .delay-5 { transition-delay:0.5s; }
+    .slide-item.active .delay-6 { transition-delay:0.6s; }
+    .free-drag-active .draggable-item { cursor:grab !important; outline:1.5px dashed rgba(16,185,129,0.65); outline-offset:4px; }
+    .free-drag-active .draggable-item:active { cursor:grabbing !important; outline:2px solid var(--accent1); }
+    .img-interactive-wrap { position:relative; overflow:hidden; border-radius:1.5rem; }
+    .img-swap-badge { position:absolute; bottom:10px; left:10px; z-index:25; opacity:0; transform:translateY(6px); transition:all 0.25s ease; }
+    .img-interactive-wrap:hover .img-swap-badge, .free-drag-active .img-swap-badge { opacity:1; transform:translateY(0); }
+    .reactor-ring { position:absolute; inset:-14px; border-radius:50%; border:2px dashed var(--accent1); opacity:0.45; animation:spinSlow 24s linear infinite; pointer-events:none; }
+    @keyframes spinSlow { to { transform:rotate(360deg); } }
+    [contenteditable="true"]:focus { outline:2px dashed var(--accent1); outline-offset:4px; background:rgba(255,255,255,0.06); border-radius:6px; }
+    .saved-badge { position:fixed; bottom:12px; right:12px; z-index:200; padding:6px 12px; border-radius:20px; background:rgba(16,185,129,0.15); color:#34d399; font-size:11px; font-weight:700; border:1px solid rgba(16,185,129,0.4); opacity:0; transition:opacity 0.3s; }
+    .saved-badge.show { opacity:1; }
+    @media (max-width:1024px) {
+      .slide-item { padding:3.5rem 1.25rem 5.5rem; overflow-y:auto; align-items:flex-start; }
+      .spatial-canvas { position:static !important; display:flex !important; flex-direction:column !important; gap:1rem !important; height:auto !important; }
+      .spatial-node, .spatial-core { position:relative !important; inset:auto !important; transform:none !important; width:100% !important; max-width:100% !important; }
+      .connector-svg { display:none !important; }
+    }
+    @media print {
+      @page { size:16in 9in landscape; margin:0; }
+      #setupView, #hudControls, #topHudBar, #overviewModal, #atmosCanvas, #toastBox, .saved-badge, #aiModal { display:none !important; }
+      #playerView { display:block !important; position:static !important; }
+      .slide-item { position:relative !important; opacity:1 !important; visibility:visible !important; transform:none !important; filter:none !important; page-break-after:always !important; height:100vh !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-emerald-400 selection:text-slate-950">
+
+  <canvas id="atmosCanvas"></canvas>
+  <input type="file" id="liveSlideImgPicker" accept="image/*" class="hidden">
+  <input type="file" id="projectImporter" accept="application/json,.json" class="hidden">
+
+  <div id="toastBox" class="fixed top-5 left-1/2 -translate-x-1/2 z-[120] pointer-events-none transition-all duration-300 opacity-0 -translate-y-4">
+    <div class="glass-panel px-6 py-3 rounded-full flex items-center gap-3 border border-emerald-400/50 shadow-2xl">
+      <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i>
+      <span id="toastText" class="text-sm font-bold text-white"></span>
+    </div>
+  </div>
+
+  <div id="savedBadge" class="saved-badge"><i class="fa-solid fa-check mr-1"></i><span>محفوظ</span></div>
+
+  <!-- ===================== SETUP VIEW ===================== -->
+  <div id="setupView" class="relative z-10 min-h-screen py-6 px-4 sm:px-7 max-w-[1440px] mx-auto flex flex-col gap-6">
+
+    <header class="glass-panel rounded-3xl p-5 sm:p-6 flex flex-col xl:flex-row items-center justify-between gap-4 border-t-2 border-t-emerald-400/50">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl grad-btn flex items-center justify-center text-2xl shadow-lg shrink-0"><i class="fa-solid fa-atom"></i></div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <h1 class="text-2xl sm:text-3xl font-black grad-text">استوديو العروض الخارق | Beast Mode v5.0</h1>
+            <span class="text-xs font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">NVIDIA Nemotron + SDXL</span>
+          </div>
+          <p class="text-slate-400 text-xs sm:text-sm mt-1">استخرج النص من صور المذكرات، وولّد عرضك التقديمي بصور حقيقية تم إنشاؤها بالذكاء الاصطناعي</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-end">
+        <button onclick="toggleAIModal()" class="px-4 py-3 rounded-2xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/35 font-bold text-xs sm:text-sm flex items-center gap-2 transition cursor-pointer">
+          <i class="fa-solid fa-wand-magic-sparkles"></i><span>توليد بالـ AI</span>
+        </button>
+        <button onclick="loadGreenHydrogenPreset()" class="px-4 py-3 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 font-bold text-xs sm:text-sm flex items-center gap-2 transition cursor-pointer">
+          <i class="fa-solid fa-industry"></i><span>عرض الهيدروجين</span>
+        </button>
+        <button onclick="launchPresentation()" class="grad-btn px-7 py-3.5 rounded-2xl text-sm sm:text-base flex items-center gap-2.5 shadow-xl cursor-pointer">
+          <i class="fa-solid fa-play"></i><span>تشغيل العرض</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-8 flex flex-col gap-4">
+        <div class="glass-panel rounded-3xl p-5 flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">1</span>
+            <div>
+              <h2 class="text-base sm:text-lg font-black text-white">مهندس الشرائح البصري</h2>
+              <p class="text-xs text-slate-400">ارفع صوراً لكل شريحة أو ولّد مشهداً صناعياً وحدد توزيع المربعات</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportProjectJSON()" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/15 border border-white/15 text-xs font-bold text-slate-300 flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-floppy-disk"></i> حفظ</button>
+            <button onclick="importProjectJSON()" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/15 border border-white/15 text-xs font-bold text-slate-300 flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-folder-open"></i> استيراد</button>
+          </div>
+        </div>
+        <div id="slidesWorkbenchList" class="flex flex-col gap-5"></div>
+      </div>
+
+      <div class="lg:col-span-4 flex flex-col gap-5">
+        <div class="glass-panel rounded-3xl p-5">
+          <h3 class="text-base font-black text-white flex items-center gap-2 mb-3"><i class="fa-solid fa-shapes text-emerald-400"></i><span>هندسة الإطارات</span></h3>
+          <label class="block text-xs font-bold text-slate-300 mb-2">شكل المربعات:</label>
+          <div class="grid grid-cols-2 gap-2.5 mb-4" id="boxShapeSelector">
+            <button onclick="setGlobalBoxShape('scifi')" data-shape="scifi" class="shape-btn px-3 py-2.5 rounded-xl border border-emerald-400 bg-emerald-500/15 text-xs font-bold text-white flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-vector-square text-emerald-400"></i><span>مقطوعة الزوايا</span></button>
+            <button onclick="setGlobalBoxShape('tilted')" data-shape="tilted" class="shape-btn px-3 py-2.5 rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-slate-300 flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-clone text-cyan-400"></i><span>مائلة متناثرة</span></button>
+            <button onclick="setGlobalBoxShape('hex')" data-shape="hex" class="shape-btn px-3 py-2.5 rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-slate-300 flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-cube text-purple-400"></i><span>سداسية</span></button>
+            <button onclick="setGlobalBoxShape('glass')" data-shape="glass" class="shape-btn px-3 py-2.5 rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-slate-300 flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-window-restore text-amber-400"></i><span>زجاجية</span></button>
+          </div>
+          <label class="block text-xs font-bold text-slate-300 mb-2">المؤثرات الحية:</label>
+          <select id="atmosModeSelect" onchange="changeAtmosMode(this.value)" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs font-bold text-white focus:border-emerald-400 focus:outline-none">
+            <option value="steam_h2">بخار + H₂</option>
+            <option value="energy">شرارات طاقة</option>
+            <option value="minimal">هادئ</option>
+          </select>
+          <div class="mt-3 flex items-center justify-between px-3 py-2.5 rounded-xl bg-slate-900/70 border border-white/10">
+            <span class="text-xs font-bold text-slate-300">سحب البخار فوق الصور</span>
+            <input id="steamOverlayToggle" type="checkbox" checked onchange="toggleSteamOverlay(this.checked)" class="w-4 h-4 accent-emerald-400 cursor-pointer">
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-3xl p-5">
+          <h3 class="text-base font-black text-white flex items-center gap-2 mb-3"><i class="fa-solid fa-palette text-cyan-400"></i><span>الثيم اللوني</span></h3>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button onclick="selectTheme('hydrogen')" data-theme="hydrogen" class="theme-btn ring-2 ring-white p-2.5 rounded-xl bg-slate-900 border border-white/15 flex items-center gap-2.5 cursor-pointer"><span class="w-6 h-6 rounded-lg shrink-0" style="background:linear-gradient(135deg,#10b981,#06b6d4)"></span><span class="text-xs font-bold">الهيدروجين</span></button>
+            <button onclick="selectTheme('cyber')" data-theme="cyber" class="theme-btn p-2.5 rounded-xl bg-slate-900 border border-white/15 flex items-center gap-2.5 cursor-pointer"><span class="w-6 h-6 rounded-lg shrink-0" style="background:linear-gradient(135deg,#00d4ff,#a855f7)"></span><span class="text-xs font-bold">سايبر</span></button>
+            <button onclick="selectTheme('industrial')" data-theme="industrial" class="theme-btn p-2.5 rounded-xl bg-slate-900 border border-white/15 flex items-center gap-2.5 cursor-pointer"><span class="w-6 h-6 rounded-lg shrink-0" style="background:linear-gradient(135deg,#f59e0b,#38bdf8)"></span><span class="text-xs font-bold">المصانع</span></button>
+            <button onclick="selectTheme('crimson')" data-theme="crimson" class="theme-btn p-2.5 rounded-xl bg-slate-900 border border-white/15 flex items-center gap-2.5 cursor-pointer"><span class="w-6 h-6 rounded-lg shrink-0" style="background:linear-gradient(135deg,#f43f5e,#a855f7)"></span><span class="text-xs font-bold">نووي</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== AI MODAL ===================== -->
+  <div id="aiModal" class="fixed inset-0 z-[90] bg-slate-950/85 backdrop-blur-xl hidden items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl max-w-2xl w-full p-6 border border-indigo-400/40">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-black text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i> التوليد الذكي (NVIDIA NIM)</h3>
+        <button onclick="toggleAIModal()" class="w-8 h-8 rounded-full bg-white/10 text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="space-y-3 mb-4">
+        <div class="p-3 bg-slate-900 border border-emerald-500/30 rounded-xl flex flex-col sm:flex-row sm:items-end gap-2">
+          <div class="flex-1">
+            <label class="block text-xs font-bold text-emerald-300 mb-1"><i class="fa-solid fa-server"></i> رابط الـ Backend (Flask) — Parse / OCR</label>
+            <input type="text" id="backendUrl" class="w-full p-2.5 rounded-xl bg-slate-950 border border-white/15 text-white text-sm focus:border-emerald-400 focus:outline-none" value="http://localhost:8000" dir="ltr">
+          </div>
+          <button onclick="testBackendConnection()" class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/40 text-emerald-200 text-xs font-black cursor-pointer whitespace-nowrap">فحص الاتصال</button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">مفتاح NVIDIA API (للتوليد المباشر فقط — ليس للـ Parse)</label>
+            <input type="password" id="aiApiKey" class="w-full p-2.5 rounded-xl bg-slate-900 border border-white/15 text-white text-sm focus:border-indigo-400 focus:outline-none" placeholder="nvapi-..." dir="ltr">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">رابط الـ API (LLM)</label>
+            <input type="text" id="aiBaseUrl" class="w-full p-2.5 rounded-xl bg-slate-900 border border-white/15 text-white text-sm focus:border-indigo-400 focus:outline-none" value="https://integrate.api.nvidia.com/v1" dir="ltr">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">اسم نموذج تحليل النص (LLM)</label>
+          <input type="text" id="aiModel" class="w-full p-2.5 rounded-xl bg-slate-900 border border-white/15 text-white text-sm focus:border-indigo-400 focus:outline-none" value="nvidia/nemotron-3-nano-omni-30b" dir="ltr">
+        </div>
+        
+        <!-- قسم استخراج النص OCR -->
+        <div class="p-3 bg-slate-900 border border-emerald-500/30 rounded-xl">
+            <label class="block text-xs font-bold text-emerald-300 mb-2"><i class="fa-solid fa-file-image"></i> استخراج النص من صورة المذكرة (Nemotron Parse)</label>
+            <input type="file" id="ocrFileInput" accept="image/*" class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-500/20 file:text-emerald-300 hover:file:bg-emerald-500/30 w-full cursor-pointer">
+            <p class="text-[10px] text-slate-500 mt-1">مدعوم: PNG, JPG, JPEG. صفحة واحدة في كل مرة. يتم التنفيذ عبر الـ Backend المحلي — المفاتيح لا تظهر في المتصفح إطلاقًا.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">نص البحث (أدخل النص أو استخرجه من الصورة أعلاه)</label>
+          <textarea id="aiResearchText" rows="6" class="w-full p-3 rounded-xl bg-slate-900 border border-white/15 text-white text-sm focus:border-indigo-400 focus:outline-none" placeholder="قم بلصق فكرة البحث أو الملخص هنا..."></textarea>
+        </div>
+      </div>
+      
+      <div id="aiStatus" class="text-xs font-bold text-emerald-300 mb-3 hidden bg-slate-900/50 p-2 rounded-lg border border-white/10"></div>
+      
+      <div class="flex justify-between items-center gap-3">
+        <button onclick="runLocalFallback()" class="px-4 py-2 rounded-xl bg-white/10 text-xs font-bold text-slate-300 hover:bg-white/20">توليد محلي (بدون AI)</button>
+        <div class="flex gap-2">
+          <button onclick="toggleAIModal()" class="px-4 py-2 rounded-xl bg-white/10 text-xs font-bold text-slate-300">إلغاء</button>
+          <button id="aiGenerateBtn" onclick="triggerAIGeneration()" class="grad-btn px-6 py-2.5 rounded-xl text-xs font-black">توليد العرض</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PLAYER VIEW ===================== -->
+  <div id="playerView">
+    <div id="topHudBar" class="fixed top-3 inset-x-5 z-50 flex items-center justify-between pointer-events-none">
+      <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 pointer-events-auto border border-white/15">
+        <span class="w-2.5 h-2.5 rounded-full animate-ping" style="background:var(--accent1)"></span>
+        <span id="hudSlideLayoutName" class="text-xs font-black text-emerald-300">المدار الرباعي</span>
+        <span class="text-white/20">|</span>
+        <span class="text-[11px] text-slate-300 hidden md:inline">تعديل النصوص يُزامَن تلقائياً</span>
+      </div>
+      <div class="flex items-center gap-2 pointer-events-auto">
+        <button onclick="exportRealPPTX()" class="glass-panel hover:border-amber-400 px-3.5 py-2 rounded-full text-xs font-bold text-amber-300 flex items-center gap-1.5 transition cursor-pointer"><i class="fa-solid fa-file-powerpoint"></i><span class="hidden sm:inline">تصدير PPTX</span></button>
+        <button onclick="returnToStudio()" class="glass-panel hover:bg-white/15 px-4 py-2 rounded-full text-xs font-bold text-white flex items-center gap-1.5 transition cursor-pointer"><i class="fa-solid fa-sliders"></i><span>هندسة</span></button>
+      </div>
+    </div>
+    <div id="slidesViewport"></div>
+    <div id="hudControls" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-wrap items-center justify-center gap-2 glass-panel px-4 sm:px-6 py-2.5 rounded-full border border-white/20 shadow-2xl">
+      <button onclick="prevSlide()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition cursor-pointer"><i class="fa-solid fa-chevron-right"></i></button>
+      <span id="slideCounterText" class="px-3 py-1 rounded-full bg-white/5 text-xs font-black text-emerald-300">1 / 1</span>
+      <button onclick="nextSlide()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition cursor-pointer"><i class="fa-solid fa-chevron-left"></i></button>
+      <div class="h-5 w-px bg-white/15 mx-1"></div>
+      <button onclick="cycleCurrentSlideSpatialLayout()" class="px-3.5 py-1.5 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/40 text-emerald-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"><i class="fa-solid fa-compass-drafting"></i><span class="hidden sm:inline">توزيع:</span><span id="hudLayoutBadge" class="text-white font-black">زوايا</span></button>
+      <button onclick="cycleGlobalBoxShape()" class="px-3.5 py-1.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/40 text-cyan-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"><i class="fa-solid fa-shapes"></i><span id="hudShapeBadge" class="hidden sm:inline">زوايا هندسية</span></button>
+      <button id="freeDragBtn" onclick="toggleFreeDragMode()" class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-amber-500/30 border border-white/15 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"><i class="fa-solid fa-up-down-left-right"></i><span class="hidden md:inline">تحريك حر</span></button>
+      <button onclick="toggleFullScreen()" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/20 text-slate-300 flex items-center justify-center transition cursor-pointer"><i class="fa-solid fa-expand"></i></button>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================
+       1. CONSTANTS & STATE
+    ===================================================== */
+    const THEMES = {
+      hydrogen:   { name:'الهيدروجين الأخضر', c1:'#10b981', c2:'#06b6d4', c3:'#34d399', bg:'#040811' },
+      cyber:      { name:'سايبر نيون',        c1:'#00d4ff', c2:'#a855f7', c3:'#38bdf8', bg:'#060714' },
+      industrial: { name:'المصانع الذهبية',   c1:'#f59e0b', c2:'#0ea5e9', c3:'#fde047', bg:'#0a0908' },
+      crimson:    { name:'الطاقة النووية',    c1:'#f43f5e', c2:'#a855f7', c3:'#fb7185', bg:'#0f050d' }
+    };
+    const SPATIAL_LAYOUTS = {
+      corners:'المدار الرباعي', scattered:'مربعات متناثرة', orbital:'مفاعل دائري 360°',
+      collage:'معرض متعدد الصور', bento:'فسيفساء Bento', cover:'غلاف سينمائي'
+    };
+    const BOX_SHAPES = { scifi:'زوايا هندسية', tilted:'مائلة حرة', hex:'سداسية', glass:'زجاجية' };
+    const SCENE_TYPES = {
+      factory_steam:'مصنع هيدروجين مع أبراج بخار', electrolyzer:'مفاعل تحليل كهربائي',
+      solar_wind:'طاقة شمسية ورياح', global_map:'شبكة عالمية', pipeline_port:'ميناء تصدير'
+    };
+    const STORAGE_KEY = 'beastmode_v50_project';
+
+    /* =====================================================
+       1.5 BACKEND API (Flask) — Nemotron Parse / OCR
+       لا مفاتيح في الواجهة؛ كل المفاتيح تعيش في backend فقط
+    ===================================================== */
+    function getApiBase() {
+      return (localStorage.getItem('backendUrl') || 'http://localhost:8000').replace(/\/+$/, '');
+    }
+
+    async function parseDocumentPage(file) {
+      const formData = new FormData();
+      formData.append('document', file, file.name);
+      formData.append('options', JSON.stringify({ decoding: { max_output_tokens: 4096 } }));
+      const response = await fetch(`${getApiBase()}/api/parse`, { method: 'POST', body: formData });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+      return result;
+    }
+
+    async function ocrDocumentPage(file) {
+      const formData = new FormData();
+      formData.append('document', file, file.name);
+      const response = await fetch(`${getApiBase()}/api/ocr`, { method: 'POST', body: formData });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+      return result;
+    }
+
+    async function checkBackendHealth() {
+      const response = await fetch(`${getApiBase()}/health`, { method: 'GET' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    }
+
+    async function testBackendConnection() {
+      const status = document.getElementById('aiStatus');
+      localStorage.setItem('backendUrl', document.getElementById('backendUrl').value.trim() || 'http://localhost:8000');
+      status.classList.remove('hidden', 'text-rose-400');
+      status.classList.add('text-emerald-300');
+      status.textContent = '⏳ جاري فحص الـ Backend...';
+      try {
+        const health = await checkBackendHealth();
+        status.textContent = `✅ Backend متصل (${health.service}) — Parse جاهز، OCR fallback جاهز`;
+      } catch (err) {
+        status.textContent = '❌ الـ Backend غير متصل: ' + err.message + ' — شغّله أولًا: cd backend && python app.py';
+        status.classList.add('text-rose-400');
+        status.classList.remove('text-emerald-300');
+      }
+    }
+
+    let appState = {
+      themeKey:'hydrogen', boxShape:'scifi', atmosMode:'steam_h2',
+      showSteamOverlay:true, freeDragMode:false, currentSlide:0, slides:[]
+    };
+
+    /* =====================================================
+       2. AUTOSAVE & PROJECT STORAGE
+    ===================================================== */
+    let saveTimer = null;
+    function autoSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            version:'5.0', ts:Date.now(),
+            appState: {
+              themeKey:appState.themeKey, boxShape:appState.boxShape,
+              atmosMode:appState.atmosMode, showSteamOverlay:appState.showSteamOverlay,
+              slides:appState.slides
+            }
+          }));
+          flashSavedBadge();
+        } catch(e) { console.warn('autosave failed', e); }
+      }, 500);
+    }
+    function flashSavedBadge() {
+      const b = document.getElementById('savedBadge');
+      if (!b) return;
+      b.classList.add('show');
+      setTimeout(() => b.classList.remove('show'), 1200);
+    }
+    function restoreFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const p = JSON.parse(raw);
+        if (p.appState && Array.isArray(p.appState.slides) && p.appState.slides.length) {
+          Object.assign(appState, p.appState);
+          return true;
+        }
+      } catch(e) { console.warn(e); }
+      return false;
+    }
+
+    /* =====================================================
+       3. AI ENGINE (NVIDIA NIM)
+    ===================================================== */
+    function toggleAIModal() {
+      const m = document.getElementById('aiModal');
+      m.classList.toggle('hidden');
+      m.classList.toggle('flex');
+      if (m.classList.contains('flex')) {
+        document.getElementById('backendUrl').value = localStorage.getItem('backendUrl') || 'http://localhost:8000';
+        document.getElementById('aiApiKey').value = localStorage.getItem('aiApiKey') || '';
+        document.getElementById('aiBaseUrl').value = localStorage.getItem('aiBaseUrl') || 'https://integrate.api.nvidia.com/v1';
+        document.getElementById('aiModel').value = localStorage.getItem('aiModel') || 'nvidia/nemotron-3-nano-omni-30b';
+        const status = document.getElementById('aiStatus');
+        status.classList.add('hidden');
+      }
+    }
+
+    // OCR: استخراج النص من الصورة عبر الـ Backend
+    // Parse (Cloud) أولًا → عند الفشل يُعرض OCR v2 (NIM محلي) كخطة بديلة يدوية فقط
+    document.getElementById('ocrFileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const status = document.getElementById('aiStatus');
+        status.classList.remove('hidden', 'text-rose-400');
+        status.classList.add('text-emerald-300');
+        status.textContent = '⏳ جاري إرسال الصورة إلى الـ Backend (Nemotron 3.5 Parse)...';
+
+        try {
+            const result = await parseDocumentPage(file);
+            const extractedText = typeof result.content === 'string'
+                ? result.content
+                : (Array.isArray(result.content)
+                    ? result.content.map(c => (c && c.text) || '').join('\n')
+                    : JSON.stringify(result.content, null, 2));
+            document.getElementById('aiResearchText').value = extractedText;
+            status.textContent = '✅ تم استخراج النص بنجاح عبر Nemotron 3.5 Parse! يمكنك الآن الضغط على "توليد العرض".';
+        } catch (err) {
+            status.textContent = '❌ فشل Parse: ' + err.message;
+            status.classList.add('text-rose-400');
+            status.classList.remove('text-emerald-300');
+            if (confirm('فشل Nemotron 3.5 Parse.\nهل تريد تجربة Nemotron OCR v2 كخطة بديلة؟\n(يتطلب تشغيل حاوية NIM محليًا على المنفذ 8001)')) {
+                await tryOcrFallback(file);
+            }
+        } finally {
+            e.target.value = '';
+        }
+    });
+
+    async function tryOcrFallback(file) {
+        const status = document.getElementById('aiStatus');
+        status.classList.remove('hidden', 'text-rose-400');
+        status.classList.add('text-emerald-300');
+        status.textContent = '⏳ جاري تجربة Nemotron OCR v2 (NIM محلي)...';
+        try {
+            const result = await ocrDocumentPage(file);
+            const text = typeof result.result === 'string' ? result.result : JSON.stringify(result.result, null, 2);
+            document.getElementById('aiResearchText').value = text;
+            status.textContent = '✅ نجح Nemotron OCR v2!';
+        } catch (err) {
+            status.textContent = '❌ فشل OCR v2: ' + err.message + ' — تأكد من تشغيل الحاوية: ./run_ocr_nim.sh';
+            status.classList.add('text-rose-400');
+            status.classList.remove('text-emerald-300');
+        }
+    }
+
+    async function triggerAIGeneration() {
+      const text = document.getElementById('aiResearchText').value.trim();
+      if (!text) { showToast('يرجى إدخال نص البحث أولاً'); return; }
+      
+      const key = document.getElementById('aiApiKey').value.trim();
+      const baseUrl = document.getElementById('aiBaseUrl').value.trim().replace(/\/$/, '');
+      const model = document.getElementById('aiModel').value.trim();
+      
+      localStorage.setItem('aiApiKey', key);
+      localStorage.setItem('aiBaseUrl', baseUrl);
+      localStorage.setItem('aiModel', model);
+
+      const btn = document.getElementById('aiGenerateBtn');
+      const status = document.getElementById('aiStatus');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> جاري التوليد...';
+      status.classList.remove('hidden', 'text-rose-400');
+      status.classList.add('text-emerald-300');
+      status.textContent = 'جاري الاتصال بنموذج الذكاء الاصطناعي...';
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 ثانية مهلة
+
+      try {
+        const systemPrompt = `You are an academic presentation architect. Based on the provided research text, generate a presentation structure.
+Return ONLY a JSON object exactly matching this schema. Do not add any markdown or explanations outside the JSON.
+Schema:
+{
+  "slides": [
+    {
+      "layout": "cover",
+      "title": "Main title",
+      "subtitle": "Subtitle",
+      "badge": "Badge text",
+      "sceneType": "factory_steam",
+      "imagePrompt": "A detailed English description of a professional image for this slide, e.g., 'A futuristic green hydrogen plant with solar panels and wind turbines, cinematic lighting, 4k'",
+      "nodes": ["Point 1", "Point 2"]
+    }
+  ]
+}
+Valid layout options: "cover", "corners", "scattered", "orbital", "collage", "bento".
+Valid sceneType options: "factory_steam", "electrolyzer", "solar_wind", "global_map", "pipeline_port".
+Ensure the first slide is "cover". Ensure other slides have 3-5 nodes.`;
+
+        const response = await fetch(`${baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Here is the research text:\n\n${text}` }
+            ],
+            temperature: 0.2
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errBody.substring(0, 200)}`);
+        }
+        
+        const data = await response.json();
+        let content = data.choices[0].message.content;
+        
+        const parsed = safeParseJSON(content);
+        if (!parsed || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
+             throw new Error("الرد المستلم من الـ AI غير صالح أو لا يحتوي على شرائح.");
+        }
+        
+        status.textContent = 'تم استلام البيانات، جاري بناء الشرائح وتوليد الصور...';
+        const newSlides = await processAISlides(parsed, key, baseUrl);
+        
+        appState.slides = newSlides;
+        renderWorkbench();
+        autoSave();
+        toggleAIModal();
+        showToast('✨ تم توليد العرض بالذكاء الاصطناعي بنجاح!');
+        
+      } catch (err) {
+        console.error(err);
+        status.textContent = 'خطأ: ' + (err.name === 'AbortError' ? 'انتهت المهلة (120 ثانية).' : err.message);
+        status.classList.add('text-rose-400');
+        status.classList.remove('text-emerald-300');
+        
+        if (confirm('فشل الاتصال بالذكاء الاصطناعي.\nهل تريد استخدام المولد المحلي كخطة بديلة؟')) {
+            runLocalFallback();
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'توليد العرض';
+        clearTimeout(timeoutId);
+      }
+    }
+
+    // استخراج وتنظيف JSON من رد الـ AI
+    function safeParseJSON(text) {
+      if (!text) return null;
+      let cleanText = text.trim();
+      if (cleanText.startsWith('```')) {
+          cleanText = cleanText.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
+      }
+      const firstBrace = cleanText.indexOf('{');
+      const lastBrace = cleanText.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+          cleanText = cleanText.substring(firstBrace, lastBrace + 1);
+      }
+      try {
+          return JSON.parse(cleanText);
+      } catch (e) {
+          const repaired = cleanText.replace(/,\s*([\]}])/g, '$1');
+          try { return JSON.parse(repaired); } catch (e2) { return null; }
+      }
+    }
+
+    // معالجة الشرائح وتوليد الصور عبر NVIDIA NIM
+    async function processAISlides(aiData, key, baseUrl) {
+      const t = THEMES[appState.themeKey];
+      const slides = [];
+      
+      for (let idx = 0; idx < aiData.slides.length; idx++) {
+          const s = aiData.slides[idx];
+          
+          const validLayouts = Object.keys(SPATIAL_LAYOUTS);
+          let layout = validLayouts.includes(s.layout) ? s.layout : (idx === 0 ? 'cover' : 'corners');
+          const validScenes = Object.keys(SCENE_TYPES);
+          let sceneType = validScenes.includes(s.sceneType) ? s.sceneType : 'factory_steam';
+          
+          let nodes = Array.isArray(s.nodes) ? s.nodes : (typeof s.nodes === 'string' ? [s.nodes] : ['نقطة توضيحية']);
+          if (nodes.length === 0) nodes = ['نقطة توضيحية'];
+          nodes = nodes.map(n => typeof n === 'string' ? n : JSON.stringify(n));
+          
+          // توليد صورة حقيقية باستخدام Stable Diffusion عبر NVIDIA NIM
+          let imageData = null;
+          if (s.imagePrompt) {
+              document.getElementById('aiStatus').textContent = `🎨 جاري رسم صورة للشريحة ${idx + 1}...`;
+              imageData = await generateImageWithNVIDIA(s.imagePrompt, key, baseUrl);
+          }
+          
+          // إذا فشل التوليد، نستخدم الصورة الافتراضية
+          const finalImage = imageData || generateIndustrialSceneSVG(sceneType, t.c1, t.c2, s.title || '');
+          
+          slides.push({
+              id: Date.now() + idx,
+              layout: layout,
+              title: s.title || `شريحة ${idx + 1}`,
+              subtitle: s.subtitle || '',
+              badge: s.badge || `المحور 0${idx + 1}`,
+              sceneType: sceneType,
+              images: [finalImage],
+              nodes: nodes
+          });
+      }
+      return slides;
+    }
+
+    // توليد الصور باستخدام NVIDIA NIM (Stable Diffusion 3.5 Large)
+    async function generateImageWithNVIDIA(prompt, key, baseUrl) {
+      try {
+          const response = await fetch(`${baseUrl}/images/generations`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${key}`
+              },
+              body: JSON.stringify({
+                  model: 'stabilityai/stable-diffusion-3.5-large',
+                  prompt: prompt,
+                  n: 1,
+                  size: '1024x1024',
+                  response_format: 'b64_json'
+              })
+          });
+          
+          if (!response.ok) throw new Error('فشل توليد الصورة');
+          
+          const data = await response.json();
+          if (data.data && data.data[0] && data.data[0].b64_json) {
+              return 'data:image/png;base64,' + data.data[0].b64_json;
+          }
+          return null;
+      } catch (e) {
+          console.warn('فشل توليد الصورة عبر NVIDIA:', e);
+          return null;
+      }
+    }
+
+    // المولد المحلي (خطة بديلة)
+    function runLocalFallback() {
+      const text = document.getElementById('aiResearchText').value.trim();
+      if (!text) { showToast('لا يوجد نص للتوليد'); return; }
+      
+      const t = THEMES[appState.themeKey];
+      const paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 10);
+      
+      let newSlides = [];
+      if (paragraphs.length === 0) {
+          newSlides = [{ layout: 'cover', title: 'عرض جديد', subtitle: 'نص افتراضي', badge: 'مقدمة', sceneType: 'factory_steam', nodes: ['محتوى'] }];
+      } else {
+          const firstLines = paragraphs[0].split('\n').map(l => l.trim()).filter(Boolean);
+          newSlides.push({
+              layout: 'cover',
+              title: firstLines[0] || 'عرض تقديمي',
+              subtitle: firstLines.slice(1).join(' ') || '',
+              badge: 'عرض تقديمي',
+              sceneType: 'factory_steam',
+              nodes: [paragraphs[1]?.substring(0, 100) || 'نقطة أولى', paragraphs[2]?.substring(0, 100) || 'نقطة ثانية']
+          });
+          
+          const layouts = ['corners', 'scattered', 'collage', 'orbital', 'bento'];
+          const scenes = ['electrolyzer', 'solar_wind', 'global_map', 'pipeline_port'];
+          
+          for (let i = 1; i < Math.min(paragraphs.length, 8); i++) {
+              const p = paragraphs[i];
+              const sentences = p.split(/[.؟!]\s+/).map(s => s.trim()).filter(s => s.length > 5);
+              const nodes = sentences.slice(0, 4).length ? sentences.slice(0, 4) : [p.substring(0, 80)];
+              
+              newSlides.push({
+                  layout: layouts[(i - 1) % layouts.length],
+                  title: `المحور ${i}`,
+                  subtitle: '',
+                  badge: `القسم ${i}`,
+                  sceneType: scenes[(i - 1) % scenes.length],
+                  nodes: nodes
+              });
+          }
+      }
+      
+      appState.slides = newSlides.map((s, idx) => ({
+          id: Date.now() + idx,
+          layout: s.layout, title: s.title, subtitle: s.subtitle, badge: s.badge, sceneType: s.sceneType,
+          images: [generateIndustrialSceneSVG(s.sceneType, t.c1, t.c2, s.title)],
+          nodes: s.nodes
+      }));
+      
+      renderWorkbench(); autoSave(); toggleAIModal();
+      showToast('تم التوليد باستخدام المحرك المحلي (بدون إنترنت)!');
+    }
+
+    /* =====================================================
+       4. VISUAL & SVG GENERATORS (Preset & Scenes)
+    ===================================================== */
+    function generateIndustrialSceneSVG(sceneType, c1, c2, customLabel = '') {
+      let innerArt = '';
+      if (sceneType === 'factory_steam') {
+        innerArt = `
+          <circle cx="920" cy="180" r="140" fill="${c1}" opacity="0.18" filter="url(#blurGlow)"/>
+          <g opacity="0.55" filter="url(#blurGlow)">
+            <circle cx="310" cy="170" r="65" fill="#e2f8ff"/><circle cx="355" cy="115" r="85" fill="#ffffff"/>
+            <circle cx="530" cy="155" r="70" fill="#d8f3dc"/><circle cx="575" cy="95" r="95" fill="#ffffff"/>
+            <circle cx="780" cy="190" r="55" fill="#e0f2fe"/>
+          </g>
+          <path d="M230,620 L265,260 L365,260 L400,620 Z" fill="#132038" stroke="${c1}" stroke-width="3"/>
+          <path d="M450,620 L490,240 L595,240 L635,620 Z" fill="#0f192d" stroke="${c2}" stroke-width="3"/>
+          <circle cx="840" cy="470" r="95" fill="url(#metalGrad)" stroke="${c1}" stroke-width="4"/>
+          <circle cx="1025" cy="495" r="72" fill="url(#metalGrad)" stroke="${c2}" stroke-width="3.5"/>
+          <text x="840" y="485" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="900" font-family="sans-serif">H₂</text>
+          <text x="1025" y="505" text-anchor="middle" fill="${c1}" font-size="28" font-weight="900" font-family="sans-serif">LH₂</text>
+          <rect x="130" y="460" width="580" height="160" rx="14" fill="#0b1324" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+          ${Array.from({length:8},(_,i)=>`<rect x="${165+i*66}" y="500" width="42" height="75" rx="6" fill="${i%2===0?c1:c2}" opacity="0.65"/>`).join('')}
+          <path d="M710,530 L840,530 L840,565 M710,490 L950,490" fill="none" stroke="${c1}" stroke-width="8" stroke-linecap="round"/>
+          <path d="M80,620 L1120,620" stroke="${c1}" stroke-width="5"/>`;
+      } else if (sceneType === 'electrolyzer') {
+        innerArt = `
+          <circle cx="600" cy="390" r="240" fill="${c1}" opacity="0.2" filter="url(#blurGlow)"/>
+          <rect x="370" y="170" width="460" height="440" rx="36" fill="#0c172c" stroke="${c1}" stroke-width="4"/>
+          <rect x="420" y="220" width="150" height="340" rx="20" fill="rgba(16,185,129,0.18)" stroke="${c1}" stroke-width="3"/>
+          <rect x="630" y="220" width="150" height="340" rx="20" fill="rgba(6,182,212,0.18)" stroke="${c2}" stroke-width="3"/>
+          <line x1="600" y1="190" x2="600" y2="590" stroke="#ffffff" stroke-width="5" stroke-dasharray="12 10"/>
+          <circle cx="495" cy="460" r="16" fill="${c1}"/><circle cx="470" cy="380" r="24" fill="${c1}"/><circle cx="520" cy="300" r="19" fill="${c1}"/>
+          <circle cx="705" cy="450" r="15" fill="${c2}"/><circle cx="730" cy="360" r="22" fill="${c2}"/><circle cx="685" cy="285" r="18" fill="${c2}"/>
+          <text x="495" y="265" text-anchor="middle" fill="#fff" font-size="36" font-weight="900">2H₂</text>
+          <text x="705" y="265" text-anchor="middle" fill="#fff" font-size="36" font-weight="900">O₂</text>
+          <path d="M160,390 L370,390 M830,390 L1040,390" stroke="${c1}" stroke-width="10" stroke-linecap="round"/>`;
+      } else if (sceneType === 'solar_wind') {
+        innerArt = `
+          <circle cx="950" cy="180" r="95" fill="#fde047" opacity="0.75" filter="url(#blurGlow)"/>
+          <circle cx="950" cy="180" r="55" fill="#fef08a"/>
+          <g stroke="#e2e8f0" stroke-width="7" stroke-linecap="round">
+            <line x1="300" y1="600" x2="300" y2="250"/><line x1="300" y1="250" x2="200" y2="150"/>
+            <line x1="300" y1="250" x2="430" y2="220"/><line x1="300" y1="250" x2="270" y2="380"/>
+            <line x1="580" y1="600" x2="580" y2="290"/><line x1="580" y1="290" x2="490" y2="190"/>
+            <line x1="580" y1="290" x2="700" y2="270"/><line x1="580" y1="290" x2="560" y2="410"/>
+          </g>
+          <polygon points="140,630 240,500 880,500 980,630" fill="url(#accentGrad)" opacity="0.65" stroke="#fff" stroke-width="2"/>
+          <line x1="390" y1="500" x2="340" y2="630" stroke="#040811" stroke-width="4"/>
+          <line x1="560" y1="500" x2="560" y2="630" stroke="#040811" stroke-width="4"/>
+          <line x1="730" y1="500" x2="780" y2="630" stroke="#040811" stroke-width="4"/>`;
+      } else {
+        innerArt = `
+          <circle cx="600" cy="400" r="260" fill="url(#accentGrad)" opacity="0.22" filter="url(#blurGlow)"/>
+          <circle cx="600" cy="400" r="220" fill="none" stroke="${c1}" stroke-width="2" stroke-dasharray="14 10"/>
+          <circle cx="600" cy="400" r="145" fill="none" stroke="${c2}" stroke-width="3"/>
+          <line x1="600" y1="400" x2="320" y2="220" stroke="${c1}" stroke-width="4"/>
+          <line x1="600" y1="400" x2="890" y2="240" stroke="${c2}" stroke-width="4"/>
+          <line x1="600" y1="400" x2="290" y2="560" stroke="${c2}" stroke-width="4"/>
+          <line x1="600" y1="400" x2="910" y2="550" stroke="${c1}" stroke-width="4"/>
+          <circle cx="600" cy="400" r="58" fill="#0b1528" stroke="${c1}" stroke-width="5"/>
+          <circle cx="320" cy="220" r="34" fill="${c1}"/><circle cx="890" cy="240" r="34" fill="${c2}"/>
+          <circle cx="290" cy="560" r="34" fill="${c2}"/><circle cx="910" cy="550" r="34" fill="${c1}"/>
+          <text x="600" y="415" text-anchor="middle" fill="#fff" font-size="34" font-weight="900">H₂ HUB</text>`;
+      }
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750">
+        <defs>
+          <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#050b16"/><stop offset="55%" stop-color="#0c1930"/><stop offset="100%" stop-color="#040811"/>
+          </linearGradient>
+          <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/>
+          </linearGradient>
+          <radialGradient id="metalGrad" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#2a4365"/><stop offset="100%" stop-color="#0a1120"/>
+          </radialGradient>
+          <filter id="blurGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="38"/></filter>
+        </defs>
+        <rect width="1200" height="750" fill="url(#bgGrad)"/>
+        <g stroke="rgba(255,255,255,0.045)" stroke-width="1">
+          ${Array.from({length:16},(_,i)=>`<line x1="${i*80}" y1="0" x2="${i*80}" y2="750"/>`).join('')}
+          ${Array.from({length:10},(_,i)=>`<line x1="0" y1="${i*80}" x2="1200" y2="${i*80}"/>`).join('')}
+        </g>
+        ${innerArt}
+        ${customLabel ? `<rect x="40" y="655" width="460" height="54" rx="14" fill="rgba(4,8,17,0.82)" stroke="${c1}" stroke-width="1.5"/>
+        <text x="270" y="690" text-anchor="middle" fill="#ffffff" font-size="22" font-weight="700" font-family="Cairo, sans-serif">${customLabel}</text>` : ''}
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    function loadGreenHydrogenPreset() {
+      const t = THEMES[appState.themeKey];
+      appState.slides = [
+        { id:1, layout:'cover', title:'ثورة الهيدروجين الأخضر ومصانع المستقبل 2030',
+          subtitle:'التحليل الكهربائي الصناعي، شبكات البخار والطاقة النظيفة، وخريطة الاستثمارات العالمية الكبرى',
+          badge:'ملف استراتيجي متكامل | Green H₂ Intelligence', sceneType:'factory_steam',
+          images:[generateIndustrialSceneSVG('factory_steam', t.c1, t.c2, 'مجمع مصانع الهيدروجين الأخضر')],
+          nodes:['إنتاج وقود نظيف خالٍ من الانبعاثات الكربونية بنسبة 100%','تشغيل مصانع الصلب والبتروكيماويات والشحن البحري الثقيل'] },
+        { id:2, layout:'corners', title:'هندسة مصانع التحليل الكهربائي وتكثيف البخار',
+          subtitle:'أربع ركائز صناعية تحيط بالمفاعل المركزي لإنتاج الهيدروجين السائل', badge:'التوزيع: مربع في كل زاوية',
+          sceneType:'electrolyzer', images:[generateIndustrialSceneSVG('electrolyzer', t.c1, t.c2, 'نواة المفاعل المركزي')],
+          nodes:['الزاوية العليا اليمنى: توليد الطاقة المتجددة بقدرة 4.5 جيجاواط','الزاوية العليا اليسرى: مفاعلات PEM لفصل الهيدروجين',
+                 'الزاوية السفلى اليمنى: معالجة البخار وتبريد المفاعلات بكفاءة 96%','الزاوية السفلى اليسرى: ضغط وتسييل الهيدروجين عند -253°C'] },
+        { id:3, layout:'scattered', title:'خارطة الاستثمارات العالمية الكبرى',
+          subtitle:'توزيع غير خطي يربط المراكز الصناعية الخمسة الكبرى', badge:'التوزيع: مربعات متناثرة',
+          sceneType:'global_map', images:[generateIndustrialSceneSVG('global_map', t.c1, t.c2, 'شبكة إنتاج وتصدير الهيدروجين')],
+          nodes:['نيوم: 8.4 مليار دولار لأكبر مصنع هيدروجين وأمونيا خضراء','الصين: +40% من قدرة المحللات الكهربائية عالمياً',
+                 'الاتحاد الأوروبي: هدف 20 مليون طن بحلول 2030','الولايات المتحدة: حوافز $3 لكل كجم هيدروجين نظيف',
+                 'الهند: إنتاج 5 ملايين طن سنوياً وتصدير المشتقات'] },
+        { id:4, layout:'collage', title:'المجمعات الصناعية المتكاملة',
+          subtitle:'دمج بصري متعدد الصور لسلسلة القيمة الصناعية', badge:'معرض متعدد الصور',
+          sceneType:'factory_steam', images:[
+            generateIndustrialSceneSVG('factory_steam', t.c1, t.c2, '1. أبراج التبريد'),
+            generateIndustrialSceneSVG('solar_wind', t.c1, t.c2, '2. حقول الطاقة'),
+            generateIndustrialSceneSVG('electrolyzer', t.c1, t.c2, '3. خزانات الهيدروجين')],
+          nodes:['ربط مباشر بين حقول التوربينات ومصانع فصل الماء','إعادة تدوير البخار والمياه المحلاة','تحويل الهيدروجين إلى أمونيا خضراء'] },
+        { id:5, layout:'orbital', title:'مؤشرات الجدوى الاقتصادية 2026-2035',
+          subtitle:'مدار دائري يستعرض التحول في تكلفة الكيلوغرام', badge:'التوزيع الدائري 360°',
+          sceneType:'solar_wind', images:[generateIndustrialSceneSVG('solar_wind', t.c1, t.c2, 'انخفاض التكلفة 60%')],
+          nodes:['$1.5/kg السعر المستهدف بحلول 2030','65% انخفاض تكلفة المحللات','+850 مليار دولار حجم السوق المتوقع','4.2x مضاعفة كفاءة سلاسل التوريد'] }
+      ];
+      renderWorkbench(); autoSave();
+      showToast('تم تجهيز عرض "الهيدروجين الأخضر والمصانع"!');
+    }
+
+    /* =====================================================
+       5. WORKBENCH RENDER
+    ===================================================== */
+    function renderWorkbench() {
+      const container = document.getElementById('slidesWorkbenchList');
+      container.innerHTML = appState.slides.map((slide, sIdx) => `
+        <div class="glass-panel rounded-3xl p-5 border border-white/10 hover:border-emerald-400/40 transition">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-white/10">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl grad-btn flex items-center justify-center text-sm font-black shadow-md">${sIdx + 1}</span>
+              <div>
+                <input type="text" value="${escapeHTML(slide.title)}" oninput="updateSlideField(${sIdx},'title',this.value)" class="bg-transparent text-white font-black text-base sm:text-lg focus:outline-none focus:border-b border-emerald-400 w-full sm:w-96" placeholder="عنوان الشريحة...">
+                <input type="text" value="${escapeHTML(slide.subtitle || '')}" oninput="updateSlideField(${sIdx},'subtitle',this.value)" class="block bg-transparent text-slate-400 text-xs mt-0.5 focus:outline-none focus:text-white w-full sm:w-96" placeholder="وصف فرعي...">
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-1.5 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-emerald-500/30">
+                <i class="fa-solid fa-compass-drafting text-emerald-400 text-xs"></i>
+                <select onchange="updateSlideField(${sIdx},'layout',this.value)" class="bg-transparent text-xs font-bold text-emerald-300 focus:outline-none cursor-pointer">
+                  ${Object.entries(SPATIAL_LAYOUTS).map(([k,label])=>`<option value="${k}" class="bg-slate-900 text-white" ${slide.layout===k?'selected':''}>${label}</option>`).join('')}
+                </select>
+              </div>
+              ${appState.slides.length > 1 ? `<button onclick="deleteSlide(${sIdx})" class="w-8 h-8 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 flex items-center justify-center text-xs transition cursor-pointer"><i class="fa-solid fa-trash"></i></button>` : ''}
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+            <div class="md:col-span-7 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-cubes"></i><span>محتوى المربعات (كل سطر = مربع):</span></label>
+                <span class="text-[11px] text-slate-400">${slide.nodes.length} مربعات</span>
+              </div>
+              <textarea rows="4" oninput="updateSlideNodesFromText(${sIdx},this.value)" class="w-full p-3 rounded-2xl bg-slate-950/80 border border-white/15 text-white text-xs sm:text-sm leading-relaxed focus:border-emerald-400 focus:outline-none" placeholder="اكتب كل فكرة في سطر مستقل...">${escapeHTML(slide.nodes.join('\n'))}</textarea>
+            </div>
+            <div class="md:col-span-5 flex flex-col justify-between bg-slate-950/60 p-3.5 rounded-2xl border border-white/10">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5"><i class="fa-solid fa-images"></i><span>صور الشريحة (${slide.images.length}):</span></span>
+                  <label class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold cursor-pointer flex items-center gap-1 transition">
+                    <i class="fa-solid fa-upload"></i><span>رفع صورة</span>
+                    <input type="file" accept="image/*" multiple class="hidden" onchange="uploadImagesToSlide(event,${sIdx})">
+                  </label>
+                </div>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                  ${slide.images.map((imgSrc, imgIdx) => `
+                    <div class="relative group rounded-xl overflow-hidden aspect-video border border-white/15 bg-slate-900">
+                      <img src="${imgSrc}" class="w-full h-full object-cover">
+                      <div class="absolute inset-0 bg-slate-950/75 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <button onclick="removeImageFromSlide(${sIdx},${imgIdx})" class="w-6 h-6 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                      </div>
+                    </div>`).join('')}
+                </div>
+              </div>
+              <div class="pt-2 border-t border-white/10">
+                <label class="block text-[11px] text-slate-400 mb-1">أو أضف مشهداً صناعياً:</label>
+                <div class="flex gap-1.5">
+                  <select id="sceneSelect_${sIdx}" class="flex-1 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-white/15 text-[11px] font-bold text-white focus:outline-none">
+                    ${Object.entries(SCENE_TYPES).map(([k,label])=>`<option value="${k}" ${slide.sceneType===k?'selected':''}>${label}</option>`).join('')}
+                  </select>
+                  <button onclick="applyGeneratedSceneToSlide(${sIdx})" class="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold cursor-pointer shrink-0">توليد</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function updateSlideField(sIdx, field, val) {
+      if (!appState.slides[sIdx]) return;
+      appState.slides[sIdx][field] = val;
+      autoSave();
+    }
+    function updateSlideNodesFromText(sIdx, rawText) {
+      if (!appState.slides[sIdx]) return;
+      const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+      appState.slides[sIdx].nodes = lines.length ? lines : ['نقطة توضيحية'];
+      autoSave();
+    }
+    async function uploadImagesToSlide(event, sIdx) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+      const slide = appState.slides[sIdx];
+      const hadOnlyDefaultSVG = slide.images.length === 1 && slide.images[0].startsWith('data:image/svg');
+      if (hadOnlyDefaultSVG) slide.images = [];
+      for (const file of files) slide.images.push(await fileToDataURL(file));
+      if (slide.images.length >= 2 && slide.layout !== 'collage') slide.layout = 'collage';
+      renderWorkbench(); autoSave();
+      showToast(`تم رفع ${files.length} صورة للشريحة ${sIdx + 1}!`);
+    }
+    function removeImageFromSlide(sIdx, imgIdx) {
+      const slide = appState.slides[sIdx];
+      if (!slide) return;
+      slide.images.splice(imgIdx, 1);
+      if (slide.images.length === 0) {
+        const t = THEMES[appState.themeKey];
+        slide.images.push(generateIndustrialSceneSVG('factory_steam', t.c1, t.c2, slide.title));
+      }
+      renderWorkbench(); autoSave();
+    }
+    function applyGeneratedSceneToSlide(sIdx) {
+      const sel = document.getElementById(`sceneSelect_${sIdx}`);
+      const sceneType = sel ? sel.value : 'factory_steam';
+      const slide = appState.slides[sIdx];
+      const t = THEMES[appState.themeKey];
+      slide.sceneType = sceneType;
+      slide.images[0] = generateIndustrialSceneSVG(sceneType, t.c1, t.c2, slide.title);
+      renderWorkbench(); autoSave();
+      showToast(`تم تحديث المشهد للشريحة ${sIdx + 1}`);
+    }
+    function addNewCustomSlide() {
+      const t = THEMES[appState.themeKey];
+      const newIdx = appState.slides.length + 1;
+      appState.slides.push({
+        id:Date.now(), layout:'corners', title:`المحور الجديد 0${newIdx}`,
+        subtitle:'توزيع المربعات في الزوايا الأربع', badge:`المحور 0${newIdx}`,
+        sceneType:'factory_steam', images:[generateIndustrialSceneSVG('factory_steam', t.c1, t.c2, `المحور 0${newIdx}`)],
+        nodes:['الزاوية الأولى: بيانات الكفاءة','الزاوية الثانية: تقنيات تكثيف البخار','الزاوية الثالثة: سلاسل الإمداد','الزاوية الرابعة: العائد الاستثماري']
+      });
+      renderWorkbench(); autoSave();
+      showToast('تمت إضافة شريحة جديدة!');
+    }
+    function deleteSlide(sIdx) {
+      if (appState.slides.length <= 1) return;
+      appState.slides.splice(sIdx, 1);
+      renderWorkbench(); autoSave();
+    }
+    function fileToDataURL(file) {
+      return new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
+    }
+
+    /* =====================================================
+       6. SLIDE HTML RENDERERS
+    ===================================================== */
+    function getContextualIcon(text, idx = 0) {
+      const t = text.toLowerCase();
+      if (t.includes('مصنع') || t.includes('صناع') || t.includes('إنتاج')) return 'fa-industry';
+      if (t.includes('بخار') || t.includes('ماء') || t.includes('سائل') || t.includes('تبريد')) return 'fa-cloud-showers-water';
+      if (t.includes('هيدروجين') || t.includes('مفاعل') || t.includes('تحليل') || t.includes('ذرة')) return 'fa-atom';
+      if (t.includes('شمس') || t.includes('رياح') || t.includes('كهربا') || t.includes('جيجا')) return 'fa-solar-panel';
+      if (t.includes('مليار') || t.includes('دولار') || t.includes('$') || t.includes('استثمار') || t.includes('سعر')) return 'fa-sack-dollar';
+      if (t.includes('أوروبا') || t.includes('صين') || t.includes('نيوم') || t.includes('عالم') || t.includes('تصدير')) return 'fa-earth-americas';
+      if (t.includes('أخضر') || t.includes('بيئ') || t.includes('نظيف') || t.includes('كربون')) return 'fa-leaf';
+      const icons = ['fa-bolt','fa-compass','fa-microchip','fa-shield-halved','fa-chart-pie','fa-rocket'];
+      return icons[idx % icons.length];
+    }
+
+    function renderImageFrameWithSteam(imgSrc, sIdx, imgIdx, caption = '', extraClasses = '') {
+      const steamHTML = appState.showSteamOverlay ? `
+        <div class="steam-overlay">
+          <div class="steam-cloud" style="left:8%"></div><div class="steam-cloud" style="left:34%"></div>
+          <div class="steam-cloud" style="left:62%"></div><div class="steam-cloud" style="left:82%"></div>
+        </div>` : '';
+      return `
+        <div class="img-interactive-wrap border border-white/20 bg-slate-950 shadow-2xl ${extraClasses}">
+          ${steamHTML}
+          <img src="${imgSrc}" class="w-full h-full object-cover rounded-[1.5rem]" alt="${escapeHTML(caption)}">
+          <button onclick="triggerLiveImageUpload(${sIdx},${imgIdx})" class="img-swap-badge px-3 py-1.5 rounded-xl bg-slate-950/90 hover:bg-emerald-500 hover:text-slate-950 text-emerald-300 border border-emerald-400/50 text-xs font-black flex items-center gap-1.5 shadow-xl cursor-pointer">
+            <i class="fa-solid fa-camera"></i><span>تغيير الصورة</span>
+          </button>
+          ${caption ? `<div class="absolute bottom-2.5 right-2.5 z-10 px-3 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md border border-white/15 text-[11px] font-bold text-slate-200 max-w-[75%] truncate">${escapeHTML(caption)}</div>` : ''}
+        </div>`;
+    }
+
+    function renderNodeCardHTML(text, idx, posStyle = '', extraClass = '') {
+      const shapeClass = `shape-${appState.boxShape}`;
+      const metricMatch = text.match(/([+$]?\d+(?:[.,]\d+)?\s*(?:%|x|X|جيجاواط|مليار|مليون|طن|\$)?)/);
+      return `
+        <div class="spatial-node draggable-item node-box ${shapeClass} p-4 sm:p-5 ${extraClass}" style="${posStyle}" data-node-idx="${idx}">
+          <div class="hud-bracket-tl"></div><div class="hud-bracket-br"></div>
+          <div class="flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-base shadow-lg" style="background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#04120e">
+              <i class="fa-solid ${getContextualIcon(text, idx)}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-white/10" style="color:var(--accent1)">الكبسولة 0${idx + 1}</span>
+                ${metricMatch && metricMatch[0].length > 1 ? `<span class="text-xs font-black text-amber-300 font-mono">${escapeHTML(metricMatch[0])}</span>` : ''}
+              </div>
+              <p contenteditable="true" class="slide-node-text text-xs sm:text-sm md:text-base font-bold text-slate-100 leading-relaxed">${escapeHTML(text)}</p>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function buildSlideSpatialHTML(slide, sIdx, total) {
+      const mainImg = slide.images[0] || '';
+      const topHeader = `
+        <div class="relative z-30 text-center max-w-4xl mx-auto mb-3 pointer-events-auto">
+          <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/5 border border-white/15 text-[11px] font-bold mb-1" style="color:var(--accent1)">
+            <i class="fa-solid fa-atom"></i>
+            <span class="slide-badge" contenteditable="true">${escapeHTML(slide.badge || `المحور 0${sIdx + 1}`)}</span>
+          </div>
+          <h2 class="slide-title text-2xl sm:text-4xl font-black grad-text leading-tight" contenteditable="true">${escapeHTML(slide.title)}</h2>
+          ${slide.subtitle ? `<p class="slide-subtitle text-xs sm:text-sm text-slate-400 mt-0.5" contenteditable="true">${escapeHTML(slide.subtitle)}</p>` : ''}
+        </div>`;
+
+      if (slide.layout === 'corners') {
+        const cornerPositions = [
+          'top:4%;right:2%;width:31%','top:4%;left:2%;width:31%',
+          'bottom:4%;right:2%;width:31%','bottom:4%;left:2%;width:31%',
+          'top:48%;right:1%;width:27%;transform:translateY(-50%)','top:48%;left:1%;width:27%;transform:translateY(-50%)'
+        ];
+        return `
+          <div class="w-full h-full flex flex-col justify-between relative z-10 max-w-[1400px] mx-auto">
+            ${topHeader}
+            <div class="spatial-canvas relative flex-1 w-full min-h-[470px]">
+              <svg class="connector-svg"></svg>
+              <div class="spatial-core draggable-item absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[22%] max-w-[260px] z-10">
+                <div class="reactor-ring"></div>
+                ${renderImageFrameWithSteam(mainImg, sIdx, 0, slide.title, 'aspect-square sm:aspect-[4/3] ring-2 ring-emerald-400/50')}
+              </div>
+              ${slide.nodes.map((n, i) => renderNodeCardHTML(n, i, `position:absolute;z-index:15;${cornerPositions[i % cornerPositions.length]}`, `stagger-el delay-${Math.min(i+1,6)}`)).join('')}
+            </div>
+          </div>`;
+      }
+
+      if (slide.layout === 'scattered') {
+        const coords = [
+          'top:2%;right:3%;width:33%;transform:rotate(-1.5deg)','top:8%;left:4%;width:32%;transform:rotate(1.8deg)',
+          'top:44%;right:6%;width:31%;transform:rotate(1.2deg)','bottom:3%;left:5%;width:34%;transform:rotate(-1.4deg)',
+          'bottom:4%;right:30%;width:34%;transform:rotate(0.8deg)'
+        ];
+        return `
+          <div class="w-full h-full flex flex-col justify-between relative z-10 max-w-[1400px] mx-auto">
+            ${topHeader}
+            <div class="spatial-canvas relative flex-1 w-full min-h-[470px]">
+              <svg class="connector-svg"></svg>
+              <div class="spatial-core draggable-item absolute top-[38%] left-[38%] -translate-x-1/2 -translate-y-1/2 w-[24%] max-w-[300px] z-10 rotate-[-2deg]">
+                ${renderImageFrameWithSteam(mainImg, sIdx, 0, 'النواة البصرية', 'aspect-video ring-2 ring-cyan-400/40')}
+              </div>
+              ${slide.nodes.map((n, i) => renderNodeCardHTML(n, i, `position:absolute;z-index:15;${coords[i % coords.length]}`, `stagger-el delay-${Math.min(i+1,6)}`)).join('')}
+            </div>
+          </div>`;
+      }
+
+      if (slide.layout === 'orbital') {
+        const count = slide.nodes.length;
+        return `
+          <div class="w-full h-full flex flex-col justify-between relative z-10 max-w-[1400px] mx-auto">
+            ${topHeader}
+            <div class="spatial-canvas relative flex-1 w-full min-h-[470px]">
+              <svg class="connector-svg"></svg>
+              <div class="spatial-core draggable-item absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 sm:w-48 sm:h-48 z-10">
+                <div class="reactor-ring"></div>
+                ${renderImageFrameWithSteam(mainImg, sIdx, 0, '', 'w-full h-full !rounded-full ring-4 ring-emerald-400/60')}
+              </div>
+              ${slide.nodes.map((n, i) => {
+                const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+                const leftPct = 50 + Math.cos(angle) * 35;
+                const topPct = 50 + Math.sin(angle) * 36;
+                return renderNodeCardHTML(n, i, `position:absolute;left:${leftPct}%;top:${topPct}%;transform:translate(-50%,-50%);width:28%;z-index:15;`, `stagger-el delay-${Math.min(i+1,6)}`);
+              }).join('')}
+            </div>
+          </div>`;
+      }
+
+      if (slide.layout === 'collage') {
+        const t = THEMES[appState.themeKey];
+        const img1 = slide.images[0] || mainImg;
+        const img2 = slide.images[1] || generateIndustrialSceneSVG('solar_wind', t.c1, t.c2, 'إمدادات الطاقة');
+        const img3 = slide.images[2] || generateIndustrialSceneSVG('electrolyzer', t.c1, t.c2, 'المفاعل الحراري');
+        return `
+          <div class="w-full h-full flex flex-col justify-between relative z-10 max-w-[1400px] mx-auto">
+            ${topHeader}
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center flex-1 my-auto">
+              <div class="lg:col-span-7 relative h-[420px] sm:h-[460px] flex items-center justify-center">
+                <div class="draggable-item absolute top-2 right-2 w-[72%] h-[72%] z-10">${renderImageFrameWithSteam(img1, sIdx, 0, 'المشهد الرئيسي', 'w-full h-full')}</div>
+                <div class="draggable-item absolute bottom-2 left-2 w-[48%] h-[48%] z-20 rotate-[-2deg]">${renderImageFrameWithSteam(img2, sIdx, 1, 'صورة 2', 'w-full h-full ring-2 ring-emerald-400')}</div>
+                <div class="draggable-item absolute top-4 left-4 w-[36%] h-[36%] z-20 rotate-[3deg]">${renderImageFrameWithSteam(img3, sIdx, 2, 'صورة 3', 'w-full h-full ring-2 ring-cyan-400')}</div>
+              </div>
+              <div class="lg:col-span-5 flex flex-col gap-4">
+                ${slide.nodes.map((n, i) => renderNodeCardHTML(n, i, '', `stagger-el delay-${Math.min(i+1,6)} ${i%2===1?'mr-6':'ml-6'}`)).join('')}
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if (slide.layout === 'bento') {
+        return `
+          <div class="w-full h-full flex flex-col justify-between relative z-10 max-w-[1380px] mx-auto">
+            ${topHeader}
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 my-auto items-stretch">
+              <div class="lg:col-span-5 draggable-item flex flex-col">${renderImageFrameWithSteam(mainImg, sIdx, 0, slide.title, 'w-full h-full min-h-[260px]')}</div>
+              <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                ${slide.nodes.map((n, i) => renderNodeCardHTML(n, i, '', `stagger-el delay-${Math.min(i+1,6)} ${i===0 && slide.nodes.length%2!==0?'sm:col-span-2':''}`)).join('')}
+              </div>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <div class="w-full h-full flex items-center justify-center relative z-10 max-w-[1380px] mx-auto">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full">
+            <div class="lg:col-span-8 text-right relative z-20">
+              <div class="stagger-el delay-1 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-xs font-black text-emerald-300 mb-5">
+                <i class="fa-solid fa-industry"></i>
+                <span class="slide-badge" contenteditable="true">${escapeHTML(slide.badge || 'عرض هندسي تفاعلي')}</span>
+              </div>
+              <h1 class="slide-title stagger-el delay-2 text-3xl sm:text-5xl lg:text-6xl font-black grad-text leading-[1.16] mb-5" contenteditable="true">${escapeHTML(slide.title)}</h1>
+              <p class="slide-subtitle stagger-el delay-3 text-base sm:text-lg text-slate-300 leading-relaxed mb-7 max-w-2xl" contenteditable="true">${escapeHTML(slide.subtitle || '')}</p>
+              <div class="stagger-el delay-4 grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-7">
+                ${slide.nodes.slice(0,4).map((n, i) => renderNodeCardHTML(n, i)).join('')}
+              </div>
+              <button onclick="nextSlide()" class="stagger-el delay-5 grad-btn px-7 py-3.5 rounded-2xl text-sm sm:text-base inline-flex items-center gap-3 shadow-2xl cursor-pointer">
+                <span>استعراض الشرائح</span><i class="fa-solid fa-arrow-left"></i>
+              </button>
+            </div>
+            <div class="lg:col-span-4 stagger-el delay-3 draggable-item flex justify-center w-full">
+              <div class="w-full max-w-[340px]">
+                ${renderImageFrameWithSteam(mainImg, sIdx, 0, slide.title, 'aspect-square sm:aspect-[4/3] ring-2 ring-emerald-400/40 shadow-[0_20px_50px_rgba(0,0,0,0.5)]')}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    /* =====================================================
+       7. SYNC, CONNECTORS & DRAG
+    ===================================================== */
+    document.addEventListener('input', (e) => {
+      const el = e.target;
+      if (!el.isContentEditable) return;
+      const section = el.closest('.slide-item');
+      if (!section) return;
+      const sIdx = parseInt(section.dataset.index, 10);
+      if (isNaN(sIdx) || !appState.slides[sIdx]) return;
+      const newText = el.textContent;
+      const nodeParent = el.closest('[data-node-idx]');
+      if (nodeParent) {
+        const nIdx = parseInt(nodeParent.dataset.nodeIdx, 10);
+        if (!isNaN(nIdx)) {
+          appState.slides[sIdx].nodes[nIdx] = newText.trim() || appState.slides[sIdx].nodes[nIdx];
+          autoSave();
+          return;
+        }
+      }
+      if (el.classList.contains('slide-title')) appState.slides[sIdx].title = newText.trim();
+      else if (el.classList.contains('slide-subtitle')) appState.slides[sIdx].subtitle = newText.trim();
+      else if (el.classList.contains('slide-badge')) appState.slides[sIdx].badge = newText.trim();
+      autoSave();
+    }, true);
+
+    function updateAllSVGConnectors() {
+      const activeSlide = document.querySelector('.slide-item.active');
+      if (!activeSlide) return;
+      const canvas = activeSlide.querySelector('.spatial-canvas');
+      const svg = activeSlide.querySelector('.connector-svg');
+      const core = activeSlide.querySelector('.spatial-core');
+      if (!canvas || !svg || !core) return;
+      const cRect = canvas.getBoundingClientRect();
+      const coreRect = core.getBoundingClientRect();
+      const cx = (coreRect.left + coreRect.width / 2) - cRect.left;
+      const cy = (coreRect.top + coreRect.height / 2) - cRect.top;
+      let pathsHTML = '';
+      activeSlide.querySelectorAll('.spatial-node').forEach(node => {
+        const nRect = node.getBoundingClientRect();
+        const nx = (nRect.left + nRect.width / 2) - cRect.left;
+        const ny = (nRect.top + nRect.height / 2) - cRect.top;
+        const ctrlX = cx + (nx - cx) * 0.55;
+        const ctrlY = cy;
+        const d = `M ${cx} ${cy} Q ${ctrlX} ${ctrlY}, ${nx} ${ny}`;
+        pathsHTML += `<path d="${d}" class="energy-line-bg"/><path d="${d}" class="energy-line-pulse"/><circle cx="${nx}" cy="${ny}" r="5" fill="var(--accent1)"/>`;
+      });
+      svg.innerHTML = pathsHTML;
+    }
+
+    let dragState = null;
+    function toggleFreeDragMode() {
+      appState.freeDragMode = !appState.freeDragMode;
+      const pv = document.getElementById('playerView');
+      const btn = document.getElementById('freeDragBtn');
+      pv.classList.toggle('free-drag-active', appState.freeDragMode);
+      btn.classList.toggle('bg-amber-500/35', appState.freeDragMode);
+      btn.classList.toggle('border-amber-400', appState.freeDragMode);
+      btn.classList.toggle('text-amber-200', appState.freeDragMode);
+      showToast(appState.freeDragMode ? 'وضع التحريك الحر مفعّل!' : 'تم قفل المواقع');
+    }
+    document.addEventListener('mousedown', e => {
+      if (!appState.freeDragMode) return;
+      if (e.target.closest('button') || e.target.getAttribute('contenteditable') === 'true') return;
+      const item = e.target.closest('.draggable-item');
+      if (!item) return;
+      const parent = item.offsetParent || item.parentElement;
+      const itemRect = item.getBoundingClientRect();
+      const parentRect = parent.getBoundingClientRect();
+      item.style.position = 'absolute';
+      item.style.right = 'auto'; item.style.bottom = 'auto';
+      item.style.left = `${itemRect.left - parentRect.left}px`;
+      item.style.top = `${itemRect.top - parentRect.top}px`;
+      item.style.width = `${itemRect.width}px`;
+      item.style.transform = 'none';
+      item.style.zIndex = 45;
+      dragState = { el:item, startX:e.clientX, startY:e.clientY, origLeft:itemRect.left - parentRect.left, origTop:itemRect.top - parentRect.top };
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragState) return;
+      dragState.el.style.left = `${dragState.origLeft + (e.clientX - dragState.startX)}px`;
+      dragState.el.style.top = `${dragState.origTop + (e.clientY - dragState.startY)}px`;
+      updateAllSVGConnectors();
+    });
+    document.addEventListener('mouseup', () => { dragState = null; });
+
+    /* =====================================================
+       8. PLAYER & UI CONTROLS
+    ===================================================== */
+    let liveUploadTarget = { sIdx:0, imgIdx:0 };
+    function triggerLiveImageUpload(sIdx, imgIdx = 0) {
+      liveUploadTarget = { sIdx, imgIdx };
+      const picker = document.getElementById('liveSlideImgPicker');
+      picker.value = ''; picker.click();
+    }
+    document.getElementById('liveSlideImgPicker').addEventListener('change', async e => {
+      const file = e.target.files[0]; if (!file) return;
+      const dataUrl = await fileToDataURL(file);
+      const slide = appState.slides[liveUploadTarget.sIdx];
+      if (slide) {
+        slide.images[liveUploadTarget.imgIdx] = dataUrl;
+        renderSingleSlideInPlayer(liveUploadTarget.sIdx);
+        autoSave();
+        showToast('تم وضع الصورة الجديدة!');
+      }
+    });
+
+    function launchPresentation() {
+      applyThemeCSS();
+      const viewport = document.getElementById('slidesViewport');
+      viewport.innerHTML = appState.slides.map((s, idx) => `<section class="slide-item" data-index="${idx}">${buildSlideSpatialHTML(s, idx, appState.slides.length)}</section>`).join('');
+      document.getElementById('setupView').style.display = 'none';
+      document.getElementById('playerView').style.display = 'block';
+      appState.currentSlide = 0;
+      updateActiveSlide();
+    }
+    function renderSingleSlideInPlayer(sIdx) {
+      const section = document.querySelector(`.slide-item[data-index="${sIdx}"]`);
+      if (!section) return;
+      section.innerHTML = buildSlideSpatialHTML(appState.slides[sIdx], sIdx, appState.slides.length);
+      updateActiveSlide();
+    }
+    function returnToStudio() {
+      document.getElementById('playerView').style.display = 'none';
+      document.getElementById('setupView').style.display = 'flex';
+      renderWorkbench();
+    }
+    function updateActiveSlide() {
+      document.querySelectorAll('.slide-item').forEach((el, i) => {
+        el.classList.remove('active', 'prev');
+        if (i === appState.currentSlide) el.classList.add('active');
+        else if (i < appState.currentSlide) el.classList.add('prev');
+      });
+      const cur = appState.slides[appState.currentSlide];
+      document.getElementById('slideCounterText').textContent = `${appState.currentSlide + 1} / ${appState.slides.length}`;
+      if (cur) {
+        document.getElementById('hudSlideLayoutName').textContent = SPATIAL_LAYOUTS[cur.layout] || cur.layout;
+        document.getElementById('hudLayoutBadge').textContent = (SPATIAL_LAYOUTS[cur.layout] || '').split(' ')[0];
+      }
+      setTimeout(updateAllSVGConnectors, 80);
+      setTimeout(updateAllSVGConnectors, 650);
+    }
+    window.addEventListener('resize', updateAllSVGConnectors);
+    function nextSlide() { if (appState.currentSlide < appState.slides.length - 1) { appState.currentSlide++; updateActiveSlide(); } }
+    function prevSlide() { if (appState.currentSlide > 0) { appState.currentSlide--; updateActiveSlide(); } }
+    function cycleCurrentSlideSpatialLayout() {
+      const cur = appState.slides[appState.currentSlide]; if (!cur) return;
+      const keys = Object.keys(SPATIAL_LAYOUTS);
+      cur.layout = keys[(keys.indexOf(cur.layout) + 1) % keys.length];
+      renderSingleSlideInPlayer(appState.currentSlide);
+      autoSave();
+      showToast(`التوزيع: ${SPATIAL_LAYOUTS[cur.layout]}`);
+    }
+    function cycleGlobalBoxShape() {
+      const keys = Object.keys(BOX_SHAPES);
+      setGlobalBoxShape(keys[(keys.indexOf(appState.boxShape) + 1) % keys.length]);
+      renderSingleSlideInPlayer(appState.currentSlide);
+    }
+    function setGlobalBoxShape(shapeKey) {
+      appState.boxShape = shapeKey;
+      document.querySelectorAll('.shape-btn').forEach(btn => {
+        const active = btn.dataset.shape === shapeKey;
+        btn.className = `shape-btn px-3 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 cursor-pointer ${active ? 'border-emerald-400 bg-emerald-500/15 text-white' : 'border-white/10 bg-white/5 text-slate-300'}`;
+      });
+      const badge = document.getElementById('hudShapeBadge');
+      if (badge) badge.textContent = BOX_SHAPES[shapeKey];
+      autoSave();
+    }
+    function selectTheme(themeKey) {
+      appState.themeKey = themeKey;
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('ring-2', btn.dataset.theme === themeKey);
+        btn.classList.toggle('ring-white', btn.dataset.theme === themeKey);
+      });
+      applyThemeCSS();
+      const t = THEMES[themeKey];
+      appState.slides.forEach(s => {
+        s.images = s.images.map(img => img.startsWith('data:image/svg') ? generateIndustrialSceneSVG(s.sceneType || 'factory_steam', t.c1, t.c2, s.title) : img);
+      });
+      renderWorkbench(); autoSave();
+    }
+    function applyThemeCSS() {
+      const t = THEMES[appState.themeKey] || THEMES.hydrogen;
+      document.documentElement.style.setProperty('--accent1', t.c1);
+      document.documentElement.style.setProperty('--accent2', t.c2);
+      document.documentElement.style.setProperty('--bg-dark', t.bg);
+    }
+    function changeAtmosMode(mode) { appState.atmosMode = mode; autoSave(); showToast('تم تحديث المؤثرات!'); }
+    function toggleSteamOverlay(checked) { appState.showSteamOverlay = checked; autoSave(); showToast(checked ? 'بخار مفعّل' : 'بخار متوقف'); }
+    
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => showToast('تعذر تفعيل ملء الشاشة'));
+      else document.exitFullscreen().catch(() => {});
+    }
+
+    /* =====================================================
+       9. PPTX EXPORT (Layout-Aware)
+    ===================================================== */
+    function svgToPng(svgDataUri, width = 1200, height = 750) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#040811'; ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/png'));
+          } catch(e) { resolve(null); }
+        };
+        img.onerror = () => resolve(null);
+        img.src = svgDataUri;
+      });
+    }
+
+    async function exportRealPPTX() {
+      if (typeof PptxGenJS === 'undefined') { showToast('مكتبة PptxGenJS غير محملة'); return; }
+      showToast('جارٍ التصدير...');
+      const pptx = new PptxGenJS();
+      pptx.layout = 'LAYOUT_16x9';
+      pptx.rtlMode = true;
+      const t = THEMES[appState.themeKey] || THEMES.hydrogen;
+
+      for (const s of appState.slides) {
+        const slide = pptx.addSlide();
+        slide.background = { color: t.bg.replace('#','') };
+        const pngImages = [];
+        for (const img of s.images) {
+          if (img.startsWith('data:image/svg')) pngImages.push(await svgToPng(img));
+          else pngImages.push(img);
+        }
+
+        const layout = s.layout || 'cover';
+        if (layout === 'cover') drawCoverPPTX(slide, s, pngImages, t);
+        else if (layout === 'corners') drawCornersPPTX(slide, s, pngImages, t);
+        else if (layout === 'scattered') drawScatteredPPTX(slide, s, pngImages, t);
+        else if (layout === 'orbital') drawOrbitalPPTX(slide, s, pngImages, t);
+        else if (layout === 'collage') drawCollagePPTX(slide, s, pngImages, t);
+        else drawBentoPPTX(slide, s, pngImages, t);
+      }
+      await pptx.writeFile({ fileName: 'BeastMode_v50_Presentation.pptx' });
+      showToast('تم التصدير بنجاح!');
+    }
+
+    function hex(c) { return (c || '#10b981').replace('#',''); }
+    function drawHeaderPPTX(slide, s, t) {
+      if (s.badge) slide.addText(s.badge, { x:0.3, y:0.15, w:9.4, h:0.3, fontSize:10, color:hex(t.c1), align:'center', fontFace:'Cairo', rtlMode:true });
+      slide.addText(s.title, { x:0.3, y:0.45, w:9.4, h:0.7, fontSize:22, bold:true, color:hex(t.c1), align:'center', fontFace:'Cairo', rtlMode:true });
+      if (s.subtitle) slide.addText(s.subtitle, { x:0.5, y:1.15, w:9, h:0.4, fontSize:11, color:'94A3B8', align:'center', fontFace:'Cairo', rtlMode:true });
+    }
+    function addNodePPTX(slide, text, x, y, w, h, t) {
+      slide.addText(text, { x, y, w, h, fontSize:10, color:'FFFFFF', fill:{ color:'111C2D' }, line:{ color:hex(t.c1), width:1.5 }, align:'right', valign:'middle', fontFace:'Cairo', rtlMode:true, margin:6 });
+    }
+    function addImgPPTX(slide, data, x, y, w, h) {
+      if (!data) return;
+      try { slide.addImage({ data, x, y, w, h, sizing:{ type:'cover', w, h } }); } catch(e) {}
+    }
+
+    function drawCoverPPTX(slide, s, imgs, t) {
+      slide.addText(s.badge || '', { x:3.5, y:0.6, w:6.2, h:0.4, fontSize:11, color:hex(t.c1), align:'right', fontFace:'Cairo', rtlMode:true });
+      slide.addText(s.title, { x:2.5, y:1.05, w:7.2, h:1.8, fontSize:30, bold:true, color:hex(t.c1), align:'right', valign:'top', fontFace:'Cairo', rtlMode:true });
+      if (s.subtitle) slide.addText(s.subtitle, { x:2.5, y:2.95, w:7.2, h:0.9, fontSize:13, color:'CBD5E1', align:'right', fontFace:'Cairo', rtlMode:true });
+      s.nodes.slice(0, 2).forEach((n, i) => addNodePPTX(slide, n, 3.9, 4.05 + i * 0.7, 5.8, 0.6, t));
+      addImgPPTX(slide, imgs[0], 0.25, 1.5, 2.8, 3.0);
+    }
+    function drawCornersPPTX(slide, s, imgs, t) {
+      drawHeaderPPTX(slide, s, t);
+      const pos = [{ x:6.9, y:1.6, w:2.8, h:1.5 }, { x:0.3, y:1.6, w:2.8, h:1.5 }, { x:6.9, y:3.5, w:2.8, h:1.5 }, { x:0.3, y:3.5, w:2.8, h:1.5 }];
+      s.nodes.slice(0, 4).forEach((n, i) => addNodePPTX(slide, n, pos[i].x, pos[i].y, pos[i].w, pos[i].h, t));
+      addImgPPTX(slide, imgs[0], 3.75, 2.2, 2.5, 2.0);
+    }
+    function drawScatteredPPTX(slide, s, imgs, t) {
+      drawHeaderPPTX(slide, s, t);
+      const pos = [{ x:6.6, y:1.55, w:3.05, h:1.35 }, { x:0.35, y:1.85, w:3.05, h:1.35 }, { x:6.25, y:3.10, w:3.30, h:1.35 }, { x:0.40, y:3.55, w:3.30, h:1.35 }, { x:3.20, y:4.05, w:3.40, h:1.20 }];
+      s.nodes.slice(0, 5).forEach((n, i) => addNodePPTX(slide, n, pos[i].x, pos[i].y, pos[i].w, pos[i].h, t));
+      addImgPPTX(slide, imgs[0], 3.30, 1.85, 2.75, 2.15);
+    }
+    function drawOrbitalPPTX(slide, s, imgs, t) {
+      drawHeaderPPTX(slide, s, t);
+      const cx = 5.0, cy = 3.55, rx = 3.4, ry = 1.85, count = Math.max(s.nodes.length, 1);
+      s.nodes.forEach((n, i) => {
+        const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+        addNodePPTX(slide, n, (cx + Math.cos(angle) * rx) - 1.2, (cy + Math.sin(angle) * ry) - 0.5, 2.4, 1.05, t);
+      });
+      addImgPPTX(slide, imgs[0], 4.05, 2.55, 1.9, 1.9);
+    }
+    function drawCollagePPTX(slide, s, imgs, t) {
+      drawHeaderPPTX(slide, s, t);
+      const panelX = 4.0, panelY = 1.65, panelW = 5.8, panelH = 3.7;
+      addImgPPTX(slide, imgs[0], panelX + 1.4, panelY + 0.15, panelW - 1.5, panelH - 0.9);
+      addImgPPTX(slide, imgs[1] || imgs[0], panelX + 0.15, panelY + panelH - 1.85, 2.6, 1.75);
+      addImgPPTX(slide, imgs[2] || imgs[0], panelX + 0.15, panelY + 0.15, 1.85, 1.55);
+      s.nodes.forEach((n, i) => addNodePPTX(slide, n, 0.25, 1.65 + i * 1.05, 3.55, 0.95, t));
+    }
+    function drawBentoPPTX(slide, s, imgs, t) {
+      drawHeaderPPTX(slide, s, t);
+      addImgPPTX(slide, imgs[0], 5.5, 1.65, 4.2, 3.7);
+      const nodePos = [{ x:0.30, y:1.65, w:2.45, h:1.75 }, { x:2.90, y:1.65, w:2.45, h:1.75 }, { x:0.30, y:3.55, w:2.45, h:1.75 }, { x:2.90, y:3.55, w:2.45, h:1.75 }];
+      s.nodes.slice(0, 4).forEach((n, i) => addNodePPTX(slide, n, nodePos[i].x, nodePos[i].y, nodePos[i].w, nodePos[i].h, t));
+    }
+
+    /* =====================================================
+       10. JSON PROJECT & HTML EXPORT
+    ===================================================== */
+    function exportProjectJSON() {
+      const payload = { app: 'BeastMode', version: '5.0', exportedAt: new Date().toISOString(), appState };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'beastmode_v50.json'; a.click();
+      showToast('تم حفظ المشروع!');
+    }
+    function importProjectJSON() { document.getElementById('projectImporter').click(); }
+    document.getElementById('projectImporter').addEventListener('change', async e => {
+      const file = e.target.files[0]; if (!file) return;
+      try {
+        const p = JSON.parse(await file.text());
+        const src = p.appState || p;
+        if (!src.slides || !src.slides.length) throw new Error('ملف غير صالح');
+        appState.themeKey = src.themeKey || 'hydrogen';
+        appState.boxShape = src.boxShape || 'scifi';
+        appState.slides = src.slides;
+        applyThemeCSS(); renderWorkbench(); autoSave();
+        showToast(`تم استيراد ${appState.slides.length} شرائح!`);
+      } catch(err) { showToast('فشل الاستيراد: ' + err.message); }
+    });
+
+    function exportStandaloneHTML() {
+      const clone = document.documentElement.cloneNode(true);
+      const body = clone.querySelector('body');
+      const keepIds = ['atmosCanvas', 'liveSlideImgPicker', 'toastBox', 'savedBadge', 'playerView', 'aiModal'];
+      Array.from(body.children).forEach(child => { if (!keepIds.includes(child.id)) child.remove(); });
+      clone.querySelector('#playerView').style.display = 'block';
+      
+      const injector = clone.ownerDocument.createElement('script');
+      injector.textContent = `
+        window.__BEASTMODE_STATE__ = ${JSON.stringify({
+          themeKey: appState.themeKey, boxShape: appState.boxShape, atmosMode: appState.atmosMode,
+          showSteamOverlay: appState.showSteamOverlay, slides: appState.slides
+        })};
+        window.addEventListener('DOMContentLoaded', () => {
+          try {
+            Object.assign(appState, window.__BEASTMODE_STATE__);
+            applyThemeCSS();
+            document.getElementById('setupView')?.remove();
+            document.getElementById('aiModal')?.remove();
+            launchPresentation();
+          } catch(e) {
+            document.body.innerHTML = '<pre style="color:red;padding:20px">فشل تحميل العرض: ' + e.message + '</pre>';
+          }
+        });
+      `;
+      body.appendChild(injector);
+
+      const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+      const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'BeastMode_Presentation.html'; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      showToast('تم حفظ العرض كملف HTML مستقل!');
+    }
+
+    /* =====================================================
+       11. KEYBOARD NAVIGATION & UTILITIES
+    ===================================================== */
+    document.addEventListener('keydown', e => {
+      const player = document.getElementById('playerView');
+      if (!player || player.style.display !== 'block') return;
+      const active = document.activeElement;
+      if (active && active.getAttribute && active.getAttribute('contenteditable') === 'true') return;
+      if (e.key === 'ArrowLeft' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); prevSlide(); }
+      if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    });
+
+    function escapeHTML(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      if (!box) return;
+      const txt = document.getElementById('toastText');
+      if (txt) txt.textContent = msg;
+      box.classList.remove('opacity-0', '-translate-y-4');
+      box.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.add('opacity-0', '-translate-y-4');
+        box.classList.remove('opacity-100', 'translate-y-0');
+      }, 3400);
+    }
+
+    /* =====================================================
+       12. ATMOS CANVAS
+    ===================================================== */
+    function initAtmosCanvas() {
+      const canvas = document.getElementById('atmosCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+      window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+      
+      const particles = Array.from({ length: 48 }, (_, i) => ({
+        x: Math.random() * w, y: Math.random() * h,
+        r: i % 5 === 0 ? Math.random() * 28 + 16 : Math.random() * 3.5 + 1.5,
+        vy: -(Math.random() * 0.65 + 0.25), vx: (Math.random() - 0.5) * 0.35,
+        isSteam: i % 5 === 0, isH2: i % 7 === 0
+      }));
+      
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        if (appState.atmosMode === 'minimal') { requestAnimationFrame(draw); return; }
+        const t = THEMES[appState.themeKey] || THEMES.hydrogen;
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.y < -50) { p.y = h + 40; p.x = Math.random() * w; }
+          if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+          
+          if (p.isSteam && appState.atmosMode === 'steam_h2') {
+            const grad = ctx.createRadialGradient(p.x, p.y, 1, p.x, p.y, p.r);
+            grad.addColorStop(0, 'rgba(220,252,245,0.08)'); grad.addColorStop(1, 'rgba(220,252,245,0)');
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+          } else {
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = t.c1; ctx.globalAlpha = 0.35; ctx.fill(); ctx.globalAlpha = 1;
+            if (p.isH2 && appState.atmosMode === 'steam_h2') {
+              ctx.font = 'bold 10px sans-serif'; ctx.fillStyle = 'rgba(16,185,129,0.4)';
+              ctx.fillText('H₂', p.x + 5, p.y - 3);
+            }
+          }
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    /* =====================================================
+       13. BOOT
+    ===================================================== */
+    window.onload = () => {
+      initAtmosCanvas();
+      if (restoreFromStorage()) {
+        applyThemeCSS();
+        renderWorkbench();
+        showToast(`♻️ تم استعادة المشروع المحفوظ (${appState.slides.length} شريحة)`);
+      } else {
+        loadGreenHydrogenPreset();
+      }
+    };
+
+    window.addEventListener('error', e => {
+      if (e.message && e.message.includes('ResizeObserver')) e.preventDefault();
+    });
+  </script>
+</body>
+</html>
