@@ -1,34 +1,32 @@
-# fly.toml — إعداد النشر على Fly.io
-# مهم: غيّر "app" إلى اسم فريد عالميًا (أو أنشئ التطبيق بالاسم الذي تريده عبر fly apps create
-# وحدّث هذا السطر ليطابقه)، ثم: fly deploy
-app = "academic-ppt-ai"
-primary_region = "cdg" # باريس — الأقرب للجزائر
+FROM python:3.12-slim
 
-[build]
-  dockerfile = "Dockerfile"
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-[http_service]
-  internal_port = 8000 # نفس منفذ gunicorn داخل الحاوية
-  force_https = true
-  auto_stop_machines = "stop"
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ["app"]
+WORKDIR /app
 
-  [http_service.concurrency]
-    type = "requests"
-    soft_limit = 20
-    hard_limit = 40
+COPY requirements.txt .
 
-# فحص صحة يستخدم /health الموجود في app.py
-[[http_service.checks]]
-  interval = "30s"
-  timeout = "5s"
-  grace_period = "30s"
-  method = "GET"
-  path = "/health"
+RUN pip install --no-cache-dir -r requirements.txt
 
-[[vm]]
-  cpu_kind = "shared"
-  cpus = 1
-  memory = "512mb"
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+
+WORKDIR /app/backend
+
+EXPOSE 8000
+
+CMD [
+    "gunicorn",
+    "--bind",
+    "0.0.0.0:8000",
+    "--workers",
+    "1",
+    "--threads",
+    "2",
+    "--timeout",
+    "180",
+    "--access-logfile",
+    "-",
+    "app:app"
+]
