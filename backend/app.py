@@ -1,173 +1,99 @@
 import os
-
-from dotenv import load_dotenv
-from flask import (
-    Flask,
-    jsonify,
-    request,
-    send_from_directory,
-)
+import json
+import base64
+import requests
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from nvidia_ocr import (
-    NvidiaOCRError,
-    ocr_page,
-)
-from nvidia_parse import (
-    NvidiaParseError,
-    parse_page,
-)
-
-
-load_dotenv()
-
-
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
-
-FRONTEND_DIR = os.path.abspath(
-    os.path.join(BASE_DIR, "..", "frontend")
-)
-
-
 app = Flask(__name__)
-CORS(app)
+# السماح بجميع المصادر بما فيها فتح الملف محلياً على الهاتف (Origin: null)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+# مفاتيح الـ API الخاصة بك
+PARSE_API_KEY = os.getenv(
+    "PARSE_API_KEY",
+    "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"
+)
+OCR_API_KEY = os.getenv(
+    "OCR_API_KEY",
+    "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"
+)
+
+PARSE_URL = "https://ai.api.nvidia.com/v1/retrieval/nvidia/nemotron-3.5-parse/parse"
+OCR_URL = "https://ai.api.nvidia.com/v1/cv/nvidia/nemotron-ocr-v2"
 
 
-@app.get("/")
-def index():
-    return send_from_directory(
-        FRONTEND_DIR,
-        "index.html",
-    )
+@app.route("/", methods=["GET"])
+@app.route("/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "ok", "message": "Backend is running"}), 200
 
 
-@app.get("/health")
-def health():
-    return jsonify(
-        {
-            "ok": True,
-            "service": "academic-ppt-ai",
-            "engines": {
-                "parse": True,
-                "ocr_fallback": True,
-            },
-        }
-    )
+def call_nemotron_parse(image_bytes, filename, mime_type):
+    """النموذج الأول: Nemotron 3.5 Parse"""
+    headers = {
+        "Authorization": f"Bearer {PARSE_API_KEY}",
+        "Accept": "application/json"
+    }
+    files = {
+        "document": (filename, image_bytes, mime_type),
+        "options": (None, json.dumps({"decoding": {"max_output_tokens": 1024}}), "application/json")
+    }
+    response = requests.post(PARSE_URL, headers=headers, files=files, timeout=60)
+    response.raise_for_status()
+    data = response.json()
+    return data.get("content", "")
 
 
-@app.post("/api/parse")
-def parse_endpoint():
-
-    if "document" not in request.files:
-        return jsonify(
+def call_nemotron_ocr(image_bytes, mime_type):
+    """النموذج الثاني: Nemotron OCR v2 عبر السحابة"""
+    b64_image = base64.b64encode(image_bytes).decode("utf-8")
+    headers = {
+        "Authorization": f"Bearer {OCR_API_KEY}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "input": [
             {
-                "ok": False,
-                "error": "No document uploaded.",
+                "type": "image_url",
+                "url": f"data:{mime_type};base64,{b64_image}"
             }
-        ), 400
+        ]
+    }
+    response = requests.post(OCR_URL, headers=headers, json=payload, timeout=60)
+    response.raise_for_status()
+    data = response.json()
+    return data
 
-    document = request.files["document"]
 
-    filename = (
-        document.filename
-        or "page.jpg"
-    )
+@app.route("/parse", methods=["POST"])
+@app.route("/ocr", methods=["POST"])
+def process_image():
+    if "file" not in request.files and "document" not in request.files:
+        return jsonify({"error": "لم يتم إرفاق صورة"}), 400
 
-    image_bytes = document.read()
+    file = request.files.get("file") or request.files.get("document")
+    image_bytes = file.read()
+    filename = file.filename or "image.jpg"
+    mime_type = file.mimetype or "image/jpeg"
 
-    if not image_bytes:
-        return jsonify(
-            {
-                "ok": False,
-                "error": "Empty document.",
-            }
-        ), 400
-
+    # المحاولة بالنموذج الأول (Parse) ثم التبديل للنموذج الثاني (OCR) عند الحاجة
     try:
-        result = parse_page(
-            image_bytes=image_bytes,
-            filename=filename,
-        )
-
-        return jsonify(
-            {
-                "ok": True,
-                "engine": result["engine"],
-                "content": result["content"],
-            }
-        )
-
-    except NvidiaParseError as exc:
-
-        return jsonify(
-            {
-                "ok": False,
-                "engine": "nemotron-3.5-parse",
-                "fallback_available": True,
-                "error": str(exc),
-            }
-        ), 502
-
-
-@app.post("/api/ocr")
-def ocr_endpoint():
-
-    if "document" not in request.files:
-        return jsonify(
-            {
-                "ok": False,
-                "error": "No document uploaded.",
-            }
-        ), 400
-
-    document = request.files["document"]
-
-    image_bytes = document.read()
-
-    if not image_bytes:
-        return jsonify(
-            {
-                "ok": False,
-                "error": "Empty document.",
-            }
-        ), 400
-
-    mime_type = (
-        document.mimetype
-        or "image/png"
-    )
-
-    try:
-        result = ocr_page(
-            image_bytes=image_bytes,
-            mime_type=mime_type,
-        )
-
-        return jsonify(
-            {
-                "ok": True,
-                "engine": "nemotron-ocr-v2",
-                "result": result,
-            }
-        )
-
-    except NvidiaOCRError as exc:
-
-        return jsonify(
-            {
-                "ok": False,
-                "engine": "nemotron-ocr-v2",
-                "error": str(exc),
-            }
-        ), 502
+        text = call_nemotron_parse(image_bytes, filename, mime_type)
+        return jsonify({"status": "success", "model": "nemotron-3.5-parse", "text": text, "content": text})
+    except Exception as parse_err:
+        try:
+            ocr_result = call_nemotron_ocr(image_bytes, mime_type)
+            return jsonify({"status": "success", "model": "nemotron-ocr-v2", "result": ocr_result, "content": str(ocr_result)})
+        except Exception as ocr_err:
+            return jsonify({
+                "error": "فشل استخراج النص في كلا النموذجين",
+                "parse_error": str(parse_err),
+                "ocr_error": str(ocr_err)
+            }), 500
 
 
 if __name__ == "__main__":
-
-    app.run(
-        host="0.0.0.0",
-        port=8000,
-        debug=False,
-    )
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
