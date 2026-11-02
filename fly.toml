@@ -1,32 +1,30 @@
-FROM python:3.12-slim
+app = "njnjh"
+primary_region = "cdg"
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+[build]
+  dockerfile = "Dockerfile"
 
-WORKDIR /app
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
 
-COPY requirements.txt .
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 20
+    hard_limit = 40
 
-RUN pip install --no-cache-dir -r requirements.txt
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "10s"
+  grace_period = "60s"
+  method = "GET"
+  path = "/health"
 
-COPY backend/ ./backend/
-COPY frontend/ ./frontend/
-
-WORKDIR /app/backend
-
-EXPOSE 8000
-
-CMD [
-    "gunicorn",
-    "--bind",
-    "0.0.0.0:8000",
-    "--workers",
-    "1",
-    "--threads",
-    "2",
-    "--timeout",
-    "180",
-    "--access-logfile",
-    "-",
-    "app:app"
-]
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "512mb"
