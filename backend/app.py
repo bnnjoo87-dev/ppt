@@ -1,29 +1,35 @@
-"""
-academic-ppt-ai — Flask API
-
-Endpoints:
-  GET  /            → خدمة frontend/index.html (نفس الأصل = لا مشاكل CORS)
-  GET  /health      → حالة الخدمة
-  POST /api/parse   → Nemotron 3.5 Parse (Cloud API) — المحرك الأساسي
-  POST /api/ocr     → Nemotron OCR v2 (NIM محلي) — fallback يدوي فقط
-
-المفاتيح تُقرأ من متغيرات البيئة إن وُجدت، وإلا تُستخدم القيم الافتراضية
-المضمّنة داخل nvidia_parse.py / nvidia_ocr.py.
-"""
-
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, send_from_directory
+from flask import (
+    Flask,
+    jsonify,
+    request,
+    send_from_directory,
+)
 from flask_cors import CORS
 
-from nvidia_ocr import NvidiaOCRError, ocr_page
-from nvidia_parse import NvidiaParseError, parse_page
+from nvidia_ocr import (
+    NvidiaOCRError,
+    ocr_page,
+)
+from nvidia_parse import (
+    NvidiaParseError,
+    parse_page,
+)
+
 
 load_dotenv()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend"))
+
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
+
+FRONTEND_DIR = os.path.abspath(
+    os.path.join(BASE_DIR, "..", "frontend")
+)
+
 
 app = Flask(__name__)
 CORS(app)
@@ -31,7 +37,10 @@ CORS(app)
 
 @app.get("/")
 def index():
-    return send_from_directory(FRONTEND_DIR, "index.html")
+    return send_from_directory(
+        FRONTEND_DIR,
+        "index.html",
+    )
 
 
 @app.get("/health")
@@ -50,6 +59,7 @@ def health():
 
 @app.post("/api/parse")
 def parse_endpoint():
+
     if "document" not in request.files:
         return jsonify(
             {
@@ -59,7 +69,12 @@ def parse_endpoint():
         ), 400
 
     document = request.files["document"]
-    filename = document.filename or "page.jpg"
+
+    filename = (
+        document.filename
+        or "page.jpg"
+    )
+
     image_bytes = document.read()
 
     if not image_bytes:
@@ -75,6 +90,7 @@ def parse_endpoint():
             image_bytes=image_bytes,
             filename=filename,
         )
+
         return jsonify(
             {
                 "ok": True,
@@ -83,21 +99,21 @@ def parse_endpoint():
             }
         )
 
-    except NvidiaParseError as parse_error:
-        # فشل Parse → لا نستدعي OCR تلقائيًا؛
-        # الواجهة تعرض زر التجربة اليدوي فقط.
+    except NvidiaParseError as exc:
+
         return jsonify(
             {
                 "ok": False,
                 "engine": "nemotron-3.5-parse",
                 "fallback_available": True,
-                "error": str(parse_error),
+                "error": str(exc),
             }
         ), 502
 
 
 @app.post("/api/ocr")
 def ocr_endpoint():
+
     if "document" not in request.files:
         return jsonify(
             {
@@ -107,6 +123,7 @@ def ocr_endpoint():
         ), 400
 
     document = request.files["document"]
+
     image_bytes = document.read()
 
     if not image_bytes:
@@ -117,13 +134,17 @@ def ocr_endpoint():
             }
         ), 400
 
-    mime_type = document.mimetype or "image/png"
+    mime_type = (
+        document.mimetype
+        or "image/png"
+    )
 
     try:
         result = ocr_page(
             image_bytes=image_bytes,
             mime_type=mime_type,
         )
+
         return jsonify(
             {
                 "ok": True,
@@ -133,6 +154,7 @@ def ocr_endpoint():
         )
 
     except NvidiaOCRError as exc:
+
         return jsonify(
             {
                 "ok": False,
@@ -143,6 +165,7 @@ def ocr_endpoint():
 
 
 if __name__ == "__main__":
+
     app.run(
         host="0.0.0.0",
         port=8000,
