@@ -1,19 +1,8 @@
-"""
-Nemotron 3.5 Parse — المحرك الأساسي لاستخراج النص + الجداول + الـ layout.
-Cloud API: https://ai.api.nvidia.com/v1/retrieval/nvidia/nemotron-3.5-parse/parse
-
-ملاحظة أمنية: المفتاح مضمّن هنا كقيمة افتراضية بطلب صريح من مالك المشروع،
-ويمكن تجاوزه دون تعديل الكود عبر متغير البيئة NVIDIA_PARSE_API_KEY (ملف .env).
-⚠️ قبل جعل المستودع عامًا على GitHub: اعكس المفتاح (revoke) وأنشئ مفتاحًا جديدًا.
-"""
-
 import json
 import os
 
 import requests
 
-
-DEFAULT_NVIDIA_PARSE_API_KEY = "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"
 
 NVIDIA_PARSE_URL = (
     "https://ai.api.nvidia.com/"
@@ -26,12 +15,23 @@ class NvidiaParseError(Exception):
 
 
 def parse_page(image_bytes: bytes, filename: str = "page.jpg") -> dict:
-    api_key = os.getenv("NVIDIA_PARSE_API_KEY") or DEFAULT_NVIDIA_PARSE_API_KEY
+    api_key = os.getenv("NVIDIA_PARSE_API_KEY")
 
     if not api_key:
-        raise NvidiaParseError("NVIDIA_PARSE_API_KEY is not configured.")
+        raise NvidiaParseError(
+            "NVIDIA_PARSE_API_KEY is not configured."
+        )
 
-    content_type = "image/png" if filename.lower().endswith(".png") else "image/jpeg"
+    filename_lower = filename.lower()
+
+    if filename_lower.endswith(".png"):
+        content_type = "image/png"
+    elif filename_lower.endswith((".jpg", ".jpeg")):
+        content_type = "image/jpeg"
+    else:
+        raise NvidiaParseError(
+            "Nemotron Parse requires PNG or JPEG page images."
+        )
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -49,7 +49,7 @@ def parse_page(image_bytes: bytes, filename: str = "page.jpg") -> dict:
             json.dumps(
                 {
                     "decoding": {
-                        "max_output_tokens": 4096,
+                        "max_output_tokens": 1024
                     }
                 }
             ),
@@ -62,19 +62,35 @@ def parse_page(image_bytes: bytes, filename: str = "page.jpg") -> dict:
             NVIDIA_PARSE_URL,
             headers=headers,
             files=files,
-            timeout=120,
+            timeout=180,
         )
-        response.raise_for_status()
     except requests.RequestException as exc:
-        raise NvidiaParseError(f"Nemotron Parse request failed: {exc}") from exc
+        raise NvidiaParseError(
+            f"Nemotron Parse request failed: {exc}"
+        ) from exc
+
+    if not response.ok:
+        try:
+            error_data = response.json()
+        except ValueError:
+            error_data = response.text[:4000]
+
+        raise NvidiaParseError(
+            f"NVIDIA HTTP {response.status_code}: "
+            f"{error_data}"
+        )
 
     try:
         result = response.json()
     except ValueError as exc:
-        raise NvidiaParseError("NVIDIA returned invalid JSON.") from exc
+        raise NvidiaParseError(
+            "NVIDIA returned invalid JSON."
+        ) from exc
 
     if "content" not in result:
-        raise NvidiaParseError(f"NVIDIA Parse response has no 'content': {result}")
+        raise NvidiaParseError(
+            f"NVIDIA Parse response has no content: {result}"
+        )
 
     return {
         "engine": "nemotron-3.5-parse",
